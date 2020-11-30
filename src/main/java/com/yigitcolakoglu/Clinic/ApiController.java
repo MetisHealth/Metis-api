@@ -15,8 +15,6 @@ import org.springframework.data.domain.PageRequest;
 import javax.servlet.http.HttpServletRequest;
 import com.google.gson.Gson;
 
-import com.yigitcolakoglu.Clinic.User.Role;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,15 +26,18 @@ import java.text.ParseException;
 @RestController
 public class ApiController {
         // TODO Session management 
+
+        private final int MAX_APPOINTMENT_RESPONSE_SIZE = 1000;
+
         @Autowired
         private AppointmentRepository appointmentRepository;
 
         @Autowired
         private UserRepository userRepository;
         
-        @GetMapping("/api/appointments")
-        public List<Appointment> getAppointments(@RequestParam(value = "start", defaultValue = "today") String startStr, @RequestParam(value = "end", defaultValue = "today") String endStr, HttpServletRequest request) { 
-            Date start = new Date(); 
+        @GetMapping("/api/appointments") // Return a list of appointments 
+        public List<Appointment> getAppointments(@RequestParam(value = "start", defaultValue = "today") String startStr, @RequestParam(value = "end", defaultValue = "today") String endStr, Authentication auth) { 
+            Date start = new Date(); // Set default times in case the user didn't send any input 
             start.setHours(0);
             start.setMinutes(0);
             start.setSeconds(0);
@@ -48,19 +49,23 @@ public class ApiController {
 
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
             try{
-                if(!startStr.equals("today")){
+                if( !startStr.equals("today") ){
                     start = format.parse(startStr);
                 }
-                if(!endStr.equals("today")){
+                if( !endStr.equals("today") ){
                     end = format.parse(endStr);
                 }
-            }catch(ParseException ex){
+            }catch( ParseException ex ){
                 System.err.println(ex.toString());
             }
-            List<Appointment> appointments = appointmentRepository.findAllBetweenDoctor(start, end, new User()); // TODO Dynamic doctor id from submitted cookie
-            if(appointments.size() > 1000){
+
+            User doctor = userRepository.findByEmail(auth.getName());
+            List<Appointment> appointments = appointmentRepository.findAllBetweenDoctor(start, end, doctor); 
+
+            if( appointments.size() > MAX_APPOINTMENT_RESPONSE_SIZE ){ // Do not return a response in case the range is too big. Prevents DOS.
                 appointments.clear();
             }
+
             return appointments;
         }
         
@@ -76,7 +81,6 @@ public class ApiController {
             }
             // TODO check if doctor ids match with cookie
             boolean overlapped = appointmentRepository.findOverlaps(appointment.getStart(), appointment.getEnd(), appointment.getDoctor()); // Check for overlaps in the submitted dates.
-            overlapped = overlapped || appointmentRepository.findAllBetweenDoctor(appointment.getStart(), appointment.getEnd(), appointment.getDoctor()).size() > 0;
 
             if(overlapped){
                 return new JSONResponse(400, "Dates you have submitted overlaps with already existing ones.");
@@ -103,16 +107,17 @@ public class ApiController {
         }
 
         @GetMapping("/api/patients")
-        public List<User> getPatient(@RequestParam(value="email") String email, @RequestParam(value="phone") String phone, @RequestParam(value="name") String name, @RequestParam(value="page", defaultValue="0") int page, @RequestParam(value="psize", defaultValue="20") int psize) {
+        public PatientsResponse getPatient(@RequestParam(value="email") String email, @RequestParam(value="phone") String phone, @RequestParam(value="name") String name, @RequestParam(value="page", defaultValue="0") int page, @RequestParam(value="psize", defaultValue="20") int psize, Authentication auth) {
             Pageable pageable = PageRequest.of(page, psize);
-
-            List<User> patients = userRepository.searchUser(email, phone, capitalizeFirstLetters(name), new User(), Role.PATIENT, pageable); // TODO Dynamic doctor
+            
+            User doctor = userRepository.findByEmail(auth.getName());
+            List<User> patients = userRepository.searchUser(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), doctor, "PATIENT", pageable); // TODO Dynamic doctor
             
             if(patients.size() > 1000){
                 patients.clear();
             }
 
-            return patients;
+            return new PatientsResponse(patients.size(), patients); // TODO Write a method in UserRepository to get the number of patients. As this definitely won't work. 
         }
 
         @PostMapping(path="/api/patients")
@@ -130,7 +135,14 @@ public class ApiController {
             // TODO Implement input verification.
             this.userRepository.save(patient);
             return new JSONResponse(200, "Success");
-        }
+        } 
+}
 
- 
+class PatientsResponse{
+    public final long patient_num;
+    public final List<User> patients;
+    public PatientsResponse(long num, List<User> patients){
+        this.patient_num = num;
+        this.patients = patients;
+    }
 }
