@@ -5,9 +5,10 @@ var calendar = new FullCalendar.Calendar(calendarEl, {
     themeSystem: 'bootstrap',
     initialView: 'timeGridWeek',
     headerToolbar: {
-              left: 'prev,next today',
-              center: 'title',
-              right: 'timeGridDay,timeGridWeek,day2GridMonth'
+        left: 'prev, next today',
+        center: 'title',
+        right: 'timeGridDay,timeGridWeek,dayGridMonth',
+        height: "100%"
 
     },
     events: 'https://fullcalendar.io/demo-events.json'

@@ -12,8 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.dao.DataIntegrityViolationException;
+
 import javax.servlet.http.HttpServletRequest;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper; 
+
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +43,7 @@ public class ApiController {
         @GetMapping("/api/appointments") // Return a list of appointments 
         public List<Appointment> getAppointments(@RequestParam(value = "start", defaultValue = "today") String startStr, @RequestParam(value = "end", defaultValue = "today") String endStr, Authentication auth) { 
             Date start = new Date(); // Set default times in case the user didn't send any input 
-            start.setHours(0);
+            start.setHours(0); // TODO this is deprecated, change
             start.setMinutes(0);
             start.setSeconds(0);
 
@@ -74,7 +79,7 @@ public class ApiController {
             // TODO Implement CSRF Protection
             Appointment appointment;
             try{ // Parse the POST request body into an Appointment object.
-                appointment = new Gson().fromJson(body, Appointment.class);
+                appointment = new ObjectMapper().readValue(body, Appointment.class);
             }catch(Exception ex){
                 System.err.println(ex.toString());
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
@@ -108,7 +113,7 @@ public class ApiController {
 
         @GetMapping("/api/patients")
         public PatientsResponse getPatient(@RequestParam(value="email") String email, @RequestParam(value="phone") String phone, @RequestParam(value="name") String name, @RequestParam(value="page", defaultValue="0") int page, @RequestParam(value="psize", defaultValue="20") int psize, Authentication auth) {
-            Pageable pageable = PageRequest.of(page, psize);
+            Pageable pageable = PageRequest.of(page < 0 ? 0 : page, psize);
             
             User doctor = userRepository.findByEmail(auth.getName());
             List<User> patients = userRepository.searchUser(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), doctor, "PATIENT", pageable); // TODO Dynamic doctor
@@ -116,24 +121,70 @@ public class ApiController {
             if(patients.size() > 1000){
                 patients.clear();
             }
-
-            return new PatientsResponse(patients.size(), patients); // TODO Write a method in UserRepository to get the number of patients. As this definitely won't work. 
+            long patient_num = userRepository.countPatients(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), doctor, "PATIENT");
+            return new PatientsResponse(patient_num, patients); // TODO Write a method in UserRepository to get the number of patients. As this definitely won't work. 
         }
 
-        @PostMapping(path="/api/patients")
-        public JSONResponse postPatient(@RequestBody String body){
+        @PostMapping(path="/api/patients/create")
+        public JSONResponse postPatientCreate(@RequestBody String body, Authentication auth){
             // TODO Implement CSRF Protection
             User patient;
             try{ // Parse the POST request body into an Appointment object.
-                patient = new Gson().fromJson(body, User.class);
+                patient = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
                 System.err.println(ex.toString());
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
-            // TODO Implement doctor verification 
+            patient.setDoctor(userRepository.findByEmail(auth.getName()));
             patient.setName(capitalizeFirstLetters(patient.getName()));
-            // TODO Implement input verification.
-            this.userRepository.save(patient);
+            try{
+                this.userRepository.save(patient);
+            }catch(DataIntegrityViolationException ex){
+                System.err.println(ex.toString());
+                return new JSONResponse(500, "A user with that e-mail already exists!");
+            }
+            return new JSONResponse(200, "Success");
+        } 
+
+        @PostMapping(path="/api/patients/update")
+        @Transactional(propagation = Propagation.REQUIRED)
+        public JSONResponse postPatientUpdate(@RequestBody String body, Authentication auth){
+            // TODO Implement CSRF Protection
+            User patient;
+            try{ // Parse the POST request body into an Appointment object.
+                patient = new ObjectMapper().readValue(body, User.class);
+            }catch(Exception ex){
+                System.err.println(ex.toString());
+                return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
+            }  
+            patient.setName(capitalizeFirstLetters(patient.getName()));
+            try{
+                int edited = this.userRepository.updatePatient(patient.getName(), patient.getEmail(), patient.getPhone(), patient.getTCNo(),patient.getHESCode(), patient.getId(), userRepository.findByEmail(auth.getName()));
+            }catch(DataIntegrityViolationException ex){
+                System.out.println(ex.toString());
+                return new JSONResponse(500, "A user with that e-mail already exists!");
+            }
+            return new JSONResponse(200, "Success");
+        } 
+
+        @PostMapping(path="/api/patients/delete")
+        @Transactional(propagation = Propagation.REQUIRED)
+        public JSONResponse postPatientDelete(@RequestBody String body, Authentication auth){
+            // TODO Implement CSRF Protection
+            User patient;
+            try{ // Parse the POST request body into an Appointment object.
+                patient = new ObjectMapper().readValue(body, User.class);
+            }catch(Exception ex){
+                System.err.println(ex.toString());
+                return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
+            }  
+            patient.setName(capitalizeFirstLetters(patient.getName()));
+            try{
+                this.userRepository.deletePatient(patient.getId(), userRepository.findByEmail(auth.getName()));
+            }catch(DataIntegrityViolationException ex){
+                System.out.println(ex.toString());
+                return new JSONResponse(500, "A user with that e-mail already exists!");
+            }
             return new JSONResponse(200, "Success");
         } 
 }

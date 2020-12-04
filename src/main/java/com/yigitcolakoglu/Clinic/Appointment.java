@@ -17,7 +17,7 @@ import  java.util.List;
 @Entity
 public class Appointment{
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private final long id;  
     private final Date start;
     private final Date end;

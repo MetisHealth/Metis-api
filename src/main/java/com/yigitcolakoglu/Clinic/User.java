@@ -11,6 +11,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 import javax.persistence.Column;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,7 +20,7 @@ import java.util.List;
 public class User{
 
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private long id;
     
     private String role;
@@ -29,43 +30,47 @@ public class User{
     private String HES_code;
     private String phone;
 
-    @OneToMany(mappedBy="patient")
+    @JsonIgnore @OneToMany(mappedBy="patient")
     private List<Appointment> patientAppointments;
 
-    @OneToMany(mappedBy="doctor")
+    @JsonIgnore @OneToMany(mappedBy="doctor")
     private List<Appointment> doctorAppointments;
 
-    @OneToMany(mappedBy="doctor")
+    @JsonIgnore @OneToMany(mappedBy="doctor")
     private List<User> patients;
     
-    @OneToMany(mappedBy="doctor")
+    @JsonIgnore @OneToMany(mappedBy="doctor")
     private List<DisabledRule> disabledRules;
 
-    @ManyToOne
+    @JsonIgnore @ManyToOne
     private User doctor; 
 
-    @Column(nullable=false)
+    @JsonIgnore
     protected String password;
 
     @Column(unique = true, nullable=false)
     protected String email;
 
+    @JsonIgnore
     protected boolean enabled, expiredCreds, expired, locked = false;
     
     // getters
-    public String getName()    { return this.name;     }
-    public String getTCNo()    { return this.TC_no;    }
+    public String getName()        { return this.name;     }
+    public String getTCNo()        { return this.TC_no;    }
     public String getPassword()    { return this.password;    }
-    public String getEmail()   { return this.email;    }
-    public String getPhone()   { return this.phone;    }
+    public String getEmail()       { return this.email;    }
+    public String getPhone()       { return this.phone;    }
+    @JsonIgnore
     public List<DisabledRule> getDisabled(){ return this.disabledRules; }
-    public String getHESCode() { return this.HES_code; }
-    public long getId()        { return this.id;       }
-    public boolean getEnabled()        { return this.enabled;       }
-    public String getRole()        { return this.role;       }
+    public String getHESCode()             { return this.HES_code; }
+    public long getId()                    { return this.id;       }
+    public boolean getEnabled()            { return this.enabled;       }
+    public String getRole()                { return this.role;       }
 
     // setters
     public void setName(String name)        { this.name = name;         }
+    public void setDoctor(User doctor)      { this.doctor = doctor;         }
+    public void setPassword(User doctor)      { this.doctor = doctor;         }
     public void setTCNo(String TC_no)       { this.TC_no = TC_no;       }
     public void setEmail(String email)      { this.email = email;       }
     public void setPhone(String phone)      { this.phone = phone;       }

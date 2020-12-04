@@ -1,4 +1,16 @@
 #search-field {
-    margin: 0.5% 20%;
+    margin: 1% 20%;
     width: 60%;
+}
+
+.patient-list{
+    width: 60%;
+    margin: 1% 20%;
+}
+
+.patient-button{
+    height: 30%;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: 1%;
 }
