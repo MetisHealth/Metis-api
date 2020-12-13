@@ -21,29 +21,29 @@ Metis is a web application that allows medical clinic owners to easily manage th
 * Enter to the mysql console and run the command.
     ```mysql
 	INSERT INTO `clinic`.`user` (`id`,
-								 `hes_code`,
-								 `tc_no`, 
-								 `email`, 
-								 `enabled`, 
-								 `expired`, 
-								 `expired_creds`, 
-								 `locked`, 
-								 `name`, 
-								 `password`, 
-								 `phone`, 
-								 `role`) 
-	VALUES ('1', 
-			'111111', 
-			'1111111111', 
-			'yigitcolakoglu@hotmail.com', 
-			b'1', 
-			b'0', 
-			b'0', 
-			b'0', 
-			'Yigit Colakoglu', 
-			'$2y$12$/lDkf3rn/Qe4foYzc4/qVehKDICmlB9acNSRphPCCQmMCnLtcvrsC', 
-			b'1111111', 
-			'DOCTOR');
+	                             `hes_code`,
+	                             `tc_no`, 
+	                             `email`,   
+	                             `enabled`,   
+	                             `expired`,   
+	                             `expired_creds`,  
+	                             `locked`,  
+	                             `name`,  
+	                             `password`,  
+	                             `phone`,  
+	                             `role`)  
+	VALUES ('1',  
+            '111111',  
+            '1111111111',   
+            'yigitcolakoglu@hotmail.com',
+            b'1',   
+            b'0',   
+            b'0',   
+            b'0',   
+            'Yigit Colakoglu',   
+            '$2y$12$/lDkf3rn/Qe4foYzc4/qVehKDICmlB9acNSRphPCCQmMCnLtcvrsC', 
+            b'1111111',   
+            'DOCTOR'); 
     ```
 * Visit localhost:8080 and login using `yigitcolakoglu@hotmail.com` and `password`
  
