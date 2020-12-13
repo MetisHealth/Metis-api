@@ -8,9 +8,9 @@ Metis is a web application that allows medical clinic owners to easily manage th
 
 ## Screenshots
 
-![Login Page](/img/screenshots/login.png)
-![Appointment Page](/img/screenshots/calendar.png)
-![Patient Page](/img/screenshots/patient.png)
+![Login Page](/imgs/screenshots/login.png)
+![Appointment Page](/imgs/screenshots/calendar.png)
+![Patient Page](/imgs/screenshots/patient.png)
 
 ## How to Install?  
 
