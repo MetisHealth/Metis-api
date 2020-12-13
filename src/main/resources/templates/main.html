@@ -10,14 +10,15 @@
 			<a id="calendar-sidebar" class="sidebar-item list-group-item list-group-item-action bg-light" target="#calendar-container">Calendar</a>
 			<a id="patients-sidebar" class="sidebar-item list-group-item list-group-item-action bg-light" target="#patients-container">Patients</a>
 			<a id="profile-sidebar" class="sidebar-item list-group-item list-group-item-action bg-light" target="#profile-container">Profile</a>
+			<a id="logout-sidebar" href="/login?logout"class="list-group-item list-group-item-action bg-light" target="#profile-container">Log Out</a>
 		  </div>
 		</div>
-
 		  <div class="container-fluid">
-			<div  id="calendar-container" class="content-container" th:insert="fragments/calendar :: calendar"></div>
+			<div  th:insert="fragments/calendar :: calendar" ></div>
 			<div  th:insert="fragments/patients :: patients"></div>
 		  </div>
 		</div>
 	  </div>
+
   </body>
 </html>

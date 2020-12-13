@@ -52,7 +52,7 @@ public class ApiController {
             end.setMinutes(59);
             end.setSeconds(59);
 
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
             try{
                 if( !startStr.equals("today") ){
                     start = format.parse(startStr);
@@ -75,7 +75,7 @@ public class ApiController {
         }
         
         @PostMapping(path="/api/appointments")
-        public JSONResponse postAppointment(@RequestBody String body){
+        public JSONResponse postAppointment(@RequestBody String body, Authentication auth){
             // TODO Implement CSRF Protection
             Appointment appointment;
             try{ // Parse the POST request body into an Appointment object.
@@ -86,22 +86,42 @@ public class ApiController {
             }
             // TODO check if doctor ids match with cookie
             boolean overlapped = appointmentRepository.findOverlaps(appointment.getStart(), appointment.getEnd(), appointment.getDoctor()); // Check for overlaps in the submitted dates.
+            appointment.setDoctor(userRepository.findByEmail(auth.getName()));
 
             if(overlapped){
                 return new JSONResponse(400, "Dates you have submitted overlaps with already existing ones.");
             }
 
-            if(userRepository.checkDoctor(appointment.getPatient().getId(), appointment.getDoctor())){
+            if(userRepository.checkDoctor(appointment.getPatient().getId(), appointment.getDoctor()).size() != 1){
                 return new JSONResponse(500, "This patient either does not exist or is not your patient.");
             } 
             
             if(appointment.checkDisabled()){
                 return new JSONResponse(500, "This time is disabled by the doctor.");
             }
-            appointmentRepository.save(appointment);
-            return new JSONResponse(200, "Success");
+            return new JSONResponse(200, appointmentRepository.save(appointment));
         }
 
+        @PostMapping(path="/api/appointments/delete")
+        @Transactional(propagation = Propagation.REQUIRED)
+        public JSONResponse postAppointmentDelete(@RequestBody String body, Authentication auth){
+            // TODO Implement CSRF Protection
+            // TODO more code to delete patients who have appointments
+            Appointment appointment;
+            try{ // Parse the POST request body into an Appointment object.
+                appointment = new ObjectMapper().readValue(body, Appointment.class);
+            }catch(Exception ex){
+                System.err.println(ex.toString());
+                return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
+            }  
+            try{
+                this.appointmentRepository.deleteAppointment(appointment.getId(), userRepository.findByEmail(auth.getName()));
+            }catch(DataIntegrityViolationException ex){
+                System.out.println(ex.toString());
+                return new JSONResponse(500, "Can't delete that!");
+            }
+            return new JSONResponse(200, "Success");
+        } 
         private String capitalizeFirstLetters(String phrase){
             String[] words = phrase.trim().toLowerCase().split(" ");
             String finalPhrase = "";
@@ -171,6 +191,7 @@ public class ApiController {
         @Transactional(propagation = Propagation.REQUIRED)
         public JSONResponse postPatientDelete(@RequestBody String body, Authentication auth){
             // TODO Implement CSRF Protection
+            // TODO more code to delete patients who have appointments
             User patient;
             try{ // Parse the POST request body into an Appointment object.
                 patient = new ObjectMapper().readValue(body, User.class);

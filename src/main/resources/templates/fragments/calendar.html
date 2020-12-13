@@ -17,6 +17,79 @@
 
 	</head>
 	<body>
-        <div id='calendar' th:fragment="calendar"></div>
+        <div id="calendar-container-main" th:fragment="calendar">
+            <div id="calendar-container" class="content-container"></div>
+            <div id="popoverContent" class="hidden hide">
+                <p><strong>Name: </strong><span id="popoverName"></span></p>
+                <p><strong>Phone: </strong><span id="popoverPhone"></span></p>
+                <p><strong>COVID: </strong><span id="popoverCovid"></span></p>
+                <p class="hide" id="popoverPriceSection"><strong>Price: </strong><span id="popoverPrice"></span></p>
+                <p class="hide" id="popoverUrlSection"><strong>Zoom: </strong><a id="popoverUrl"></a></p>
+                <button style="z-index: 5;"  type="button" class="cancelAppointmentPopover btn btn-danger"><strong>Cancel</strong> <i class="fas fa-times" aria-hidden="true"></i></button>
+            </div>
+			<!-- New Appointment Modal -->
+			<div class="modal fade" id="newAppointmentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+			  <div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+				  <div class="modal-header">
+					<h5 class="modal-title" id="exampleModalLongTitle">New Appointment</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					  <span aria-hidden="true">&times;</span>
+					</button>
+				  </div>
+				  <div class="modal-body">
+					<div style="position: relative" class="input-group mb-3">
+					  <div  class="input-group-prepend">
+						<span class="input-group-text"><i class="fas fa-user"></i></span>
+					  </div>
+					  <input class="form-control" id="newAppointmentPatient" type="text"  placeholder="Name" aria-label="Name" aria-describedby="basic-addon1">
+					  <ul class="list-group" id="searchResults">
+					  </ul>
+					</div>
+					<div class="input-group mb-3">
+					  <div class="input-group-prepend">
+						<span class="input-group-text">Start:</span>
+					  </div>
+					  <input id="newAppointmentStart" type="text" class="form-control" placeholder="Name" aria-label="Name" aria-describedby="basic-addon1">
+					</div>
+					<div class="input-group mb-3">
+					  <div class="input-group-prepend">
+						<span class="input-group-text" >End:</span>
+					  </div>
+					  <input id="newAppointmentEnd" type="text" class="form-control" placeholder="Name" aria-label="Name" aria-describedby="basic-addon1">
+					</div>
+					<div class="input-group mb-3">
+					  <div class="input-group-prepend">
+						<div class="input-group-text">
+						  <input id="newAppointmentOnline" type="checkbox" aria-label="Checkbox for following text input">
+						</div>
+					  </div>
+					  <p type="text" class="form-control" aria-label="Text input with checkbox"> Appointment will be held online.</p>
+					</div>
+					<div class="input-group mb-3">
+					  <div class="input-group-prepend">
+						<div class="input-group-text">
+						  <input id="newAppointmentReceipt" type="checkbox" aria-label="Checkbox for following text input">
+						</div>
+					  </div>
+					  <p type="text" class="form-control" aria-label="Text input with checkbox"> Send receipt after appointment is complete.</p>
+					</div>
+			        <div class="hidden" id="payment-info-container">
+                        <div class="input-group mb-3">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text" >Payment: </span>
+                          </div>
+                          <input id="newAppointmentPrice" type="text" class="form-control" placeholder="Price" aria-label="Name" aria-describedby="basic-addon1">
+                        </div>
+                    </div>
+				  </div>
+				  <div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary save-button">Save</button>
+				  </div>
+				</div>
+			  </div>
+			</div>
+        </div>
 	</body>
 </html>

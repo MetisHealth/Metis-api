@@ -30,6 +30,8 @@ public class User{
     private String HES_code;
     private String phone;
 
+    private boolean safe;
+
     @JsonIgnore @OneToMany(mappedBy="patient")
     private List<Appointment> patientAppointments;
 
@@ -53,7 +55,11 @@ public class User{
 
     @JsonIgnore
     protected boolean enabled, expiredCreds, expired, locked = false;
-    
+   
+    @JsonIgnore
+    private boolean checkSafe(){
+        return true;
+    }
     // getters
     public String getName()        { return this.name;     }
     public String getTCNo()        { return this.TC_no;    }
@@ -65,6 +71,7 @@ public class User{
     public String getHESCode()             { return this.HES_code; }
     public long getId()                    { return this.id;       }
     public boolean getEnabled()            { return this.enabled;       }
+    public boolean getSafe()            { return this.safe;       }
     public String getRole()                { return this.role;       }
 
     // setters

@@ -10,6 +10,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import  java.util.List;
@@ -18,24 +19,25 @@ import  java.util.List;
 public class Appointment{
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private final long id;  
-    private final Date start;
-    private final Date end;
+    private long id;  
+
+    @JsonFormat(locale = "tr", shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy, HH:mm", timezone = "Europe/Istanbul")
+    private Date start;
+    @JsonFormat(locale = "tr", shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy, HH:mm", timezone = "Europe/Istanbul")
+    private Date end;
+
+    private double price;
+    private boolean receipt;
+    private boolean online;
+    private String zoom_url;
 
     @ManyToOne
-    private final User patient;
-    
-    @ManyToOne
-    private final User doctor;
-    
-    public Appointment(long id, Date start, Date end, User patient, User doctor){
-        this.id = id;
-        this.start = start;
-        this.end = end;
-        this.patient = patient;
-        this.doctor = doctor;
-    }
+    private User patient;
 
+    @JsonIgnore
+    @ManyToOne
+    private User doctor;
+   
     @JsonIgnore
     public boolean checkDisabled(){
         List<DisabledRule> rules = doctor.getDisabled();
@@ -50,6 +52,13 @@ public class Appointment{
     // getters
     public Date  getStart()   { return this.start; }
     public Date  getEnd()     { return this.end; }
+    public long getId()    { return this.id; }
     public User getPatient()    { return this.patient; }
     public User getDoctor()    { return this.doctor; }
+    public boolean getReceipt()    { return this.receipt; }
+    public boolean getOnline()    { return this.online; }
+    public double getPrice()    { return this.price; }
+
+    // setters
+    public void setDoctor(User doctor)    { this.doctor = doctor; }
 }
