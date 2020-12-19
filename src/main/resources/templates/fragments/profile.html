@@ -69,19 +69,21 @@
     </div>
     <div th:if="${display_api} == true" class="profile-group">
         <h5>HES API: </h5>
-        <button style="margin-bottom:1%" id="profile-hes-send-sms" type="button" class="btn btn-primary">Send SMS</button>
         <div style="margin-bottom:1%" id="profile-hes-code-group" class="input-group mb-3">
+          <div class="input-group-prepend">
+            <button id="profile-hes-send-sms" type="button" class="btn btn-primary">Send SMS</button>
+          </div>
           <input id="profile-hes-sms-code" type="text" class="form-control" placeholder="SMS Code" aria-label="Recipient's username" aria-describedby="basic-addon2">
           <div class="input-group-append">
             <button class="btn btn-outline-primary" type="button" id="profile-hes-save">Save</button>
           </div>
         </div>
         <br>
-        <h5>WhereBy API: </h5>
+        <h5>WhereBy URL: </h5>
         <div class="input-group mb-3">
-          <input type="text" class="form-control" placeholder="WhereBy API Key" aria-label="Recipient's username" aria-describedby="basic-addon2">
+          <input id="profile-whereby-url" type="text" class="form-control" placeholder="WhereBy Room URL" aria-label="Recipient's username" aria-describedby="basic-addon2">
           <div class="input-group-append">
-            <button class="btn btn-outline-primary" type="button">Save</button>
+            <button id="profile-whereby-save" class="btn btn-outline-primary" type="button">Save</button>
           </div>
         </div>
     </div>

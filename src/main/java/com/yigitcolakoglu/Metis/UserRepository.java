@@ -45,6 +45,10 @@ public interface UserRepository extends JpaRepository<User, Integer>{
         void updateHesToken(@Param("email") String email, @Param("token") String token);
 
         @Modifying
+        @Query("UPDATE User u SET WhereBy_URL = :token WHERE email = :email")
+        void updateWherebyKey(@Param("email") String email, @Param("token") String token);
+
+        @Modifying
         @Query("DELETE FROM User WHERE id = :id AND doctor = :doctor")
         void deletePatient(@Param("id") long id, @Param("doctor") User doctor);
 }

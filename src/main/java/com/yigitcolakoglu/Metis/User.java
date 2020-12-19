@@ -35,7 +35,7 @@ public class User{
     private String HES_id_token;
 
     private boolean WhereBy_api_works = false;
-    private String WhereBy_api_token = "";
+    private String WhereBy_URL = "";
 
     private String locale = "tr";
     private boolean safe;

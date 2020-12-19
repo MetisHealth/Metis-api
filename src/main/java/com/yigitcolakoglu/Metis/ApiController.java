@@ -355,6 +355,13 @@ public class ApiController {
             }
             return new JSONResponse(200, "Sent SMS");
         }
+
+        @Transactional(propagation = Propagation.REQUIRED)
+        @PostMapping(path="/api/whereby/url")
+        public JSONResponse postWherebyApiKey(@RequestBody String body, Authentication auth){
+           userRepository.updateWherebyKey(auth.getName(), body);
+           return new JSONResponse(200, "Success");
+        }
 }
 
 class PatientsResponse implements StandardResponse{

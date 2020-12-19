@@ -3,7 +3,6 @@ $(document).ready(function(){
         console.log(data);
         $("#profile-name").val(data.name);
         $("#profile-email").val(data.email);
-        $("#profile-hes-code-group").toggle(false);
         $("#profile-hes-code").val(data.hescode);
         $("#profile-phone").val(data.phone);
         $("#profile-tc").val(data.tcno);
@@ -11,8 +10,6 @@ $(document).ready(function(){
             $("#profile-locale").val(data.locale);
         }
         $("#profile-hes-send-sms").on("click", function(){
-            $("#profile-hes-send-sms").toggle(false);
-            $("#profile-hes-code-group").toggle(true);
             $.get("/api/hes/sendsms");
         });
         $("#profile-save").on("click", function(){
@@ -29,9 +26,10 @@ $(document).ready(function(){
             }, "json");
         });
         $("#profile-hes-save").on("click", function(){
-            $("#profile-hes-send-sms").toggle(true);
-            $("#profile-hes-code-group").toggle(false);
             $.get(`/api/hes/smscode?code=${$("#profile-hes-sms-code").val()}`);
+        });
+        $("#profile-whereby-save").on("click",function(){
+            $.post("/api/whereby/url",$("#profile-whereby-url").val());
         });
     });
 });
