@@ -93,7 +93,7 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
             }else{
                 item.find(".safe-patient").addClass("btn-success");
             }
-            item.find(".safe-patient").on("click", function(){
+            item.find(".safe-patient").on("click", function(e){
                 e.stopPropagation();
                 $.get("/api/hes/check?id="+patient.id, function(data, status){
                     if(data.message == "safe"){
