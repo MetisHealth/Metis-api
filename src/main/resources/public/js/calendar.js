@@ -58,7 +58,9 @@ $(window).ready(function() {
             closePopovers();
             $("#popoverName").html(info.event.title);
             $("#popoverPhone").html(info.event.extendedProps.phone);
-            $("#popoverCovid").html(info.event.extendedProps.safe ? "YES": "NO");
+            $("#popoverCovid").html(info.event.extendedProps.safe ? "NO": "YES");
+            $("#popoverUrl").html(`<a target="_blank" rel="noopener noreferrer" href="${window.Metis.profile.wherebyUrl}">Link</a>`);
+            $("#popoverPrice").html(info.event.extendedProps.price);
             if(!info.event.extendedProps.online){
                 $("#popoverUrlSection").addClass("hide");
             }else{
@@ -102,9 +104,10 @@ $(window).ready(function() {
 							title: x.patient.name,
 							start: Date.parse(x.start),
 							end: Date.parse(x.end),
+                            backgroundColor: x.patient.safe ? "#1266F1" : "#FF9100",
                             extendedProps: {
                                 phone: x.patient.phone,
-                                safe: x.patient.covid_safe,
+                                safe: x.patient.safe,
                                 online: x.online,
                                 receipt: x.receipt,
                                 price: x.price,
@@ -123,7 +126,7 @@ $(window).ready(function() {
     var popoverEvent;
 
     calendar.render();
-
+    Metis.calendar = calendar;
     $("#newAppointmentPatient").focus(function(){
         $("#searchResults").toggle(true);
     });
@@ -210,9 +213,10 @@ $(window).ready(function() {
                 start: Date.parse(appointment.start),
                 end: Date.parse(appointment.end),
                 title: appointment.patient.name,
+                backgroundColor: appointment.patient.safe ? "#1266F1" : "#FF9100",
                 extendedProps: {
                     phone: appointment.patient.phone,
-                    safe: appointment.patient.covid_safe,
+                    safe: appointment.patient.safe,
                     online: appointment.online,
                     receipt: appointment.receipt,
                     price: appointment.price,

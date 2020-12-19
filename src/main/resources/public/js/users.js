@@ -84,7 +84,7 @@ phone=${$("#admin-phone-input").val()}&name=${$("#admin-name-input").val()}&page
         $(".patient-list-admin").empty();
         data.patients.forEach(function(patient){
             let item = $(list_item_admin);
-            item.attr("id", `patient-${patient.id}`)
+            item.attr("id", `admin-patient-${patient.id}`)
             item.find(".item-name").text(patient.name);
             item.find(".item-phone").text(patient.phone);
             item.find(".item-email").text(patient.email);
@@ -96,6 +96,23 @@ phone=${$("#admin-phone-input").val()}&name=${$("#admin-name-input").val()}&page
             item.find(".password-patient").on("click", function(e){
                 e.stopPropagation(); // TODO implement actual password change
                 $("#admin-passwordModal").modal("show");
+                $("#admin-passwordModalSave").on("click", function(e){
+                    let password_change_url = window.location.protocol + "//" + window.location.host + "/api/patient/password";
+					$.ajax({
+						contentType: 'text/plain',
+						data: `newPassword=${$("#admin-passwordModalPassword").val()}&email=${patient.email}`,
+						dataType: 'form-data',
+						success: function(data){
+							console.log(data);
+						},
+						error: function(){
+							console.log("an error occured");
+						},
+						processData: false,
+						type: 'POST',
+						url: password_change_url
+					});
+                });
             });
             item.on("click", function(event){
                 $("#admin-patientModalTitle").text("Edit Patient");

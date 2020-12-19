@@ -94,10 +94,8 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
                 item.find(".safe-patient").addClass("btn-success");
             }
             item.find(".safe-patient").on("click", function(){
+                e.stopPropagation();
                 $.get("/api/hes/check?id="+patient.id, function(data, status){
-                    if(status != 200){
-                        return
-                    }
                     if(data.message == "safe"){
                         $(`#patient-${patient.id} .safe-patient`).removeClass("btn-warning");
                         $(`#patient-${patient.id} .safe-patient`).addClass("btn-success");
@@ -118,7 +116,7 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
                 e.stopPropagation(); // TODO implement actual password change
                 $("#passwordModal").modal("show");
                 $("#passwordModalSave").on("click", function(e){
-                    let password_change_url = window.location.protocol + "//" + window.location.host + "/api/password";
+                    let password_change_url = window.location.protocol + "//" + window.location.host + "/api/patient/password";
 					$.ajax({
 						contentType: 'text/plain',
 						data: `newPassword=${$("#passwordModalPassword").val()}&email=${patient.email}`,

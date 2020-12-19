@@ -1,5 +1,6 @@
 
 let active_id = "#calendar-container";
+window.Metis = {};
 
 $.ajaxSetup({
       contentType: "application/json; charset=utf-8"

@@ -224,7 +224,7 @@ public class ApiController {
            return body;
         }
 
-        @PostMapping(path="/api/password")
+        @PostMapping(path="/api/patient/password")
         @Transactional(propagation = Propagation.REQUIRED)
         public JSONResponse postDoctorPassword(@RequestBody String body, Authentication auth){
             Map<String, String> data = this.bodyToMap(body); 
@@ -232,7 +232,10 @@ public class ApiController {
             if(!(data.containsKey("email") && data.containsKey("newPassword"))){
                 return new JSONResponse(500, "Missing parameters!");
             }
-            if(userRepository.checkDoctor(data.get("email"), userRepository.findByEmail(auth.getName())).size() != 1){
+            if(checkRole(auth.getAuthorities(), "PATIENT")){
+                return new JSONResponse(401, "You cannot do that!");
+            }
+            if(!checkRole(auth.getAuthorities(), "ADMIN") && userRepository.checkDoctor(data.get("email"), userRepository.findByEmail(auth.getName())).size() != 1){
                 return new JSONResponse(500, "This patient either does not exist or is not your patient.");
             }
             BCryptPasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
@@ -240,6 +243,22 @@ public class ApiController {
             return new JSONResponse(200, "Password changed succcesfully.");
         } 
 
+        @PostMapping(path="/api/password")
+        @Transactional(propagation = Propagation.REQUIRED)
+        public JSONResponse postPassword(@RequestBody String body, Authentication auth){
+            Map<String, String> data = this.bodyToMap(body); 
+
+            if(!(data.containsKey("oldPassword") && data.containsKey("newPassword"))){
+                return new JSONResponse(500, "Missing parameters!");
+            }
+            BCryptPasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
+            if(!pwdEncoder.matches(data.get("oldPassword"), userRepository.findByEmail(auth.getName()).getPassword())){
+                return new JSONResponse(500, "Old password incorrect.");
+            }
+            userRepository.updatePassword(auth.getName(), pwdEncoder.encode(data.get("newPassword")));
+            return new JSONResponse(200, "Password changed succcesfully.");
+        } 
+        
         @PostMapping(path="/api/patients/update")
         @Transactional(propagation = Propagation.REQUIRED)
         public JSONResponse postPatientUpdate(@RequestBody String body, Authentication auth){

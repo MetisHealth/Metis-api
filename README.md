@@ -43,7 +43,7 @@ Metis is a web application that allows medical clinic owners to easily manage th
             'Yigit Colakoglu',   
             '$2y$12$/lDkf3rn/Qe4foYzc4/qVehKDICmlB9acNSRphPCCQmMCnLtcvrsC', 
             b'1111111',   
-            'DOCTOR'); 
+            'ADMIN'); 
     ```
 * Visit localhost:8080 and login using `yigitcolakoglu@hotmail.com` and `password`
  

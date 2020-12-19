@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
+@Table(name="users")
 public class User{
 
     @Id
@@ -84,6 +85,7 @@ public class User{
 
     // setters
     public void setName(String name)        { this.name = name;         }
+    public void setWherebyUrl(String url) { this.WhereBy_URL = url; }
     public void setDoctor(User doctor)      { this.doctor = doctor;         }
     public void setPassword(User doctor)      { this.doctor = doctor;         }
     public void setTCNo(String TC_no)       { this.TC_no = TC_no;       }

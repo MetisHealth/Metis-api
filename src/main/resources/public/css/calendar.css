@@ -52,6 +52,7 @@ html, body {
 
 .cancelAppointmentPopover{
     width: 66%;
+    font-size: 0.8vw;
     margin-left: 17%;
     margin-right: 17%;
 }

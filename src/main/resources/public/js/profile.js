@@ -1,6 +1,6 @@
 $(document).ready(function(){
     $.get("/api/profile", function(data, status){
-        console.log(data);
+        Metis.profile = data;
         $("#profile-name").val(data.name);
         $("#profile-email").val(data.email);
         $("#profile-hes-code").val(data.hescode);
@@ -10,6 +10,26 @@ $(document).ready(function(){
         if(data.locale){
             $("#profile-locale").val(data.locale);
         }
+        $("#profile-password-save").on("click", function(){
+            if($("profile-password-new").val() != $("profile-password-new-confirm").val()){
+                console.log("Passwords do not match!");
+                return
+            }
+            $.ajax({
+                contentType: 'text/plain',
+                data: `newPassword=${$("#profile-password-new").val()}&oldPassword=${$("#profile-password-current").val()}`,
+                dataType: 'form-data',
+                success: function(data){
+                    console.log(data);
+                },
+                error: function(){
+                    console.log("an error occured");
+                },
+                processData: false,
+                type: 'POST',
+                url: "/api/password"
+            });
+        });
         $("#profile-hes-send-sms").on("click", function(){
             $.get("/api/hes/sendsms");
         });
