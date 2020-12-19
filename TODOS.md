@@ -8,3 +8,4 @@
 * Foriba Cloud Fatura
 * Localization using thymeleaf
 * Send e-mails.
+* Auto-resizing most html elements and auto collapsing sidebar in small screens.

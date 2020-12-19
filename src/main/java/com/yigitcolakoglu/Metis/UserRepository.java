@@ -13,6 +13,9 @@ public interface UserRepository extends JpaRepository<User, Integer>{
         @Query("SELECT p FROM User p WHERE p.email = :email AND p.doctor = :doctor")
         List<User> checkDoctor(@Param("email") String email,  @Param("doctor") User doctor);
 
+        @Query("SELECT p FROM User p WHERE p.id = :id AND p.doctor = :doctor")
+        List<User> checkDoctor(@Param("id") long id,  @Param("doctor") User doctor);
+
         @Query("SELECT p FROM User p WHERE p.email LIKE :email% AND p.phone LIKE :phone% AND p.name LIKE %:name% AND p.doctor = :doctor AND p.role LIKE :role")
         List<User> searchUser(@Param("email") String email, @Param("phone") String phone, @Param("name") String name, @Param("doctor") User doctor, @Param("role") String role, Pageable pageable);
 
@@ -28,9 +31,12 @@ public interface UserRepository extends JpaRepository<User, Integer>{
         @Query("SELECT count(*) FROM User p WHERE p.email LIKE :email% AND p.phone LIKE :phone% AND p.name LIKE %:name% AND p.role LIKE :role")
         long countPatients(@Param("email") String email, @Param("phone") String phone, @Param("name") String name, @Param("role") String role);
 
+        @Query("SELECT u FROM User u WHERE u.id = :id")
+        User findById(@Param("id") long id);
+
         @Modifying
-        @Query("UPDATE User u SET u.name = :name, u.email = :email, u.phone = :phone, u.TC_no = :tcno, u.HES_code = :hescode WHERE u.id = :id AND u.doctor = :doctor")
-        int updatePatient(@Param("name") String name, @Param("email") String email, @Param("phone") String phone, @Param("tcno") String tcno, @Param("hescode") String hescode, @Param("id") long id, @Param("doctor") User doctor);
+        @Query("UPDATE User u SET u.name = :name, u.email = :email, u.phone = :phone, u.TC_no = :tcno, u.HES_code = :hescode, u.role = :role WHERE u.id = :id")
+        int updatePatient(@Param("name") String name, @Param("email") String email, @Param("phone") String phone, @Param("tcno") String tcno, @Param("hescode") String hescode, @Param("role") String role, @Param("id") long id);
 
         @Modifying
         @Query("UPDATE User u SET u.name = :name, u.email = :email, u.phone = :phone, u.TC_no = :tcno, u.HES_code = :hescode, u.locale = :locale WHERE u.id = :id")
@@ -51,4 +57,8 @@ public interface UserRepository extends JpaRepository<User, Integer>{
         @Modifying
         @Query("DELETE FROM User WHERE id = :id AND doctor = :doctor")
         void deletePatient(@Param("id") long id, @Param("doctor") User doctor);
+
+        @Modifying
+        @Query("UPDATE User u SET safe = :safe WHERE id = :id")
+        void updateCovidStatus(@Param("id") long id, @Param("safe") boolean safe);
 }

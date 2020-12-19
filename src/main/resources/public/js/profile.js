@@ -6,6 +6,7 @@ $(document).ready(function(){
         $("#profile-hes-code").val(data.hescode);
         $("#profile-phone").val(data.phone);
         $("#profile-tc").val(data.tcno);
+        $("#profile-whereby-url").val(data.wherebyUrl)
         if(data.locale){
             $("#profile-locale").val(data.locale);
         }

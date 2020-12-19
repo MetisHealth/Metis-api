@@ -15,8 +15,8 @@ Metis is a web application that allows medical clinic owners to easily manage th
 ## How to Install?  
 
 *(Those steps assume you have MySQL and Redis installed on your system)*
-* Grab the source code.
-* Edit `src/main/resources/application.properties` according to your setup.
+* Grab the source code or the latest build.
+* Edit `config/application.properties` according to your setup. (Create the file and folder if it does not exist)
 * Run gradle bootRun. This will create the clinic database.
 * Enter to the mysql console and run the command.
     ```mysql

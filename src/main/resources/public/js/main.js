@@ -1,6 +1,10 @@
 
 let active_id = "#calendar-container";
 
+$.ajaxSetup({
+      contentType: "application/json; charset=utf-8"
+});
+
 $(document).ready(function () {
 
     $("#menu-toggle").click(function(e) {

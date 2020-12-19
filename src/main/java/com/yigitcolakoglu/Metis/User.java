@@ -26,7 +26,7 @@ public class User{
     private String role;
 
     private String name;
-    private String TC_no;
+    private String TC_no = "00000000000";
     private String HES_code;
     private String phone;
 
@@ -38,7 +38,7 @@ public class User{
     private String WhereBy_URL = "";
 
     private String locale = "tr";
-    private boolean safe;
+    private boolean safe = true;
 
     @JsonIgnore @OneToMany(mappedBy="patient")
     private List<Appointment> patientAppointments;
@@ -74,7 +74,10 @@ public class User{
     public String getPhone()       { return this.phone;    }
     @JsonIgnore
     public List<DisabledRule> getDisabled(){ return this.disabledRules; }
+    @JsonIgnore 
+    public String getHesToken() { return this.HES_id_token; }
     public String getHESCode()             { return this.HES_code; }
+    public String getWherebyUrl()             { return this.WhereBy_URL; }
     public long getId()                    { return this.id;       }
     public boolean getSafe()            { return this.safe;       }
     public String getRole()                { return this.role;       }

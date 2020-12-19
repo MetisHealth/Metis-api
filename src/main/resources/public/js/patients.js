@@ -11,15 +11,12 @@ const list_item = '\
 			    <div class="mb-1"><span class="item-phone"></span></div>\
 		        <small class="item-email"></small>\
               </div>\
-              <button type="button" class="patient-button safe-patient p-2 bd-highlight btn btn-success"><i class="fa fa-check" aria-hidden="true"></i></button>\
+              <button type="button" class="patient-button safe-patient p-2 bd-highlight btn"><i class="fas fa-biohazard" aria-hidden="true"></i></button>\
               <button type="button" class="patient-button password-patient p-2 bd-highlight btn btn-primary"><i class="fa fa-key" aria-hidden="true"></i></button>\
               <button type="button" class="patient-button delete-patient p-2 bd-highlight btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>\
 			</div>\
 		  </a>'
 
-$.ajaxSetup({
-      contentType: "application/json; charset=utf-8"
-});
 
 function update_patients(text){
 
@@ -89,6 +86,29 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
             item.find(".item-name").text(patient.name);
             item.find(".item-phone").text(patient.phone);
             item.find(".item-email").text(patient.email);
+
+            if(patient.safe == false){
+                item.find(".safe-patient").addClass("btn-warning");
+                item.find(".safe-patient").css("color","black");
+            }else{
+                item.find(".safe-patient").addClass("btn-success");
+            }
+            item.find(".safe-patient").on("click", function(){
+                $.get("/api/hes/check?id="+patient.id, function(data, status){
+                    if(status != 200){
+                        return
+                    }
+                    if(data.message == "safe"){
+                        $(`#patient-${patient.id} .safe-patient`).removeClass("btn-warning");
+                        $(`#patient-${patient.id} .safe-patient`).addClass("btn-success");
+                        $(`#patient-${patient.id} .safe-patient`).css("color", "");
+                    }else{
+                        $(`#patient-${patient.id} .safe-patient`).removeClass("btn-success");
+                        $(`#patient-${patient.id} .safe-patient`).addClass("btn-warning");
+                        $(`#patient-${patient.id} .safe-patient`).css("color", "black");
+                    }
+                })
+            });
             item.find(".delete-patient").on("click", function(e){
                 e.stopPropagation();
                 Patient.from(patient).delete();
@@ -165,6 +185,7 @@ $(document).ready(function(){
                                       "PATIENT");
             patient.create();
             $("#patientModal").modal("hide");
+            update_patients("");
         });
     });
     $("#passwordModalGenerate").on("click", function(e){

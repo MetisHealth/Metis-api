@@ -173,7 +173,15 @@ public class ApiController {
         private boolean checkRole(Collection<? extends GrantedAuthority> authorities, String role){
             return authorities.stream().anyMatch(auth -> auth.getAuthority().equals(role));
         }
-
+        private String removeChar(String str, char c){
+            String final_str = "";
+            for(int i = 0; i < str.length(); i++){
+                if(str.charAt(i) != c){
+                    final_str += str.charAt(i);
+                }
+            }
+            return final_str;
+        }
         @PostMapping(path="/api/patients/create")
         public JSONResponse postPatientCreate(@RequestBody String body, Authentication auth){
             if(checkRole(auth.getAuthorities(), "PATIENT")){
@@ -190,10 +198,11 @@ public class ApiController {
             }
 
             if(!patient.getRole().equals("PATIENT") && !checkRole(auth.getAuthorities(),"ADMIN")){
-               return new JSONResponse(403, "You cannot list this role!"); 
+               return new JSONResponse(403, "You cannot create this role!"); 
             }
             patient.setDoctor(userRepository.findByEmail(auth.getName()));
             patient.setName(capitalizeFirstLetters(patient.getName()));
+            patient.setHESCode(this.removeChar(patient.getHESCode().toUpperCase().strip(), '-'));
             try{
                 this.userRepository.save(patient);
             }catch(DataIntegrityViolationException ex){
@@ -238,7 +247,6 @@ public class ApiController {
             if(checkRole(auth.getAuthorities(), "PATIENT")){
                return new JSONResponse(403, "You are not authorized to do this!"); 
             }
-
             // TODO Implement CSRF Protection
             User patient;
             try{ // Parse the POST request body into an Appointment object.
@@ -247,12 +255,16 @@ public class ApiController {
                 System.err.println(ex.toString());
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
+            if(checkRole(auth.getAuthorities(), "DOCTOR") && userRepository.checkDoctor(patient.getId(), userRepository.findByEmail(auth.getName())).size() != 1){
+                return new JSONResponse(500, "This patient either does not exist or is not your patient.");
+            }
             if(!patient.getRole().equals("PATIENT") && !checkRole(auth.getAuthorities(),"ADMIN")){
-               return new JSONResponse(403, "You cannot list this role!"); 
+               return new JSONResponse(403, "You cannot create this role!"); 
             }
             patient.setName(capitalizeFirstLetters(patient.getName()));
+            patient.setHESCode(this.removeChar(patient.getHESCode().toUpperCase().strip(), '-'));
             try{
-                int edited = this.userRepository.updatePatient(patient.getName(), patient.getEmail(), patient.getPhone(), patient.getTCNo(),patient.getHESCode(), patient.getId(), userRepository.findByEmail(auth.getName()));
+                int edited = this.userRepository.updatePatient(patient.getName(), patient.getEmail(), patient.getPhone(), patient.getTCNo(), patient.getHESCode(), patient.getRole(), patient.getId());
             }catch(DataIntegrityViolationException ex){
                 System.out.println(ex.toString());
                 return new JSONResponse(500, "A user with that e-mail already exists!");
@@ -361,6 +373,38 @@ public class ApiController {
         public JSONResponse postWherebyApiKey(@RequestBody String body, Authentication auth){
            userRepository.updateWherebyKey(auth.getName(), body);
            return new JSONResponse(200, "Success");
+        }
+
+        @Transactional(propagation = Propagation.REQUIRED)
+        @GetMapping(path="/api/hes/check")
+        public JSONResponse getHesCheck(@RequestParam(value = "id") long id, Authentication auth){
+            User doctor = userRepository.findByEmail(auth.getName());
+            if(userRepository.checkDoctor(id, doctor).size() != 1){
+                return new JSONResponse(500, "This patient either does not exist or is not your patient.");
+            }
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "Bearer "+doctor.getHesToken());
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode request_obj = mapper.createObjectNode();
+            request_obj.put("hes_code",userRepository.findById(id).getHESCode());
+            HttpEntity<String> request = new HttpEntity<String>(request_obj.toString(), headers);
+            String status = "";
+            try{
+                ResponseEntity<String> result = restTemplate.postForEntity("https://hessvc.saglik.gov.tr/services/hescodeproxy/api/check-hes-code", request, String.class); 
+                JSONObject response = new JSONObject(result.getBody());
+                status = response.getString("current_health_status");
+            }catch(Exception e){
+                return new JSONResponse(500, "An issue occured");
+            }
+            if(status.equals("RISKLESS")){
+                userRepository.updateCovidStatus(id, true);
+                return new JSONResponse(200, "safe");            
+            }else{
+                userRepository.updateCovidStatus(id, false);
+                return new JSONResponse(200, "unsafe");
+            }
         }
 }
 

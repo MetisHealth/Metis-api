@@ -10,7 +10,6 @@ const list_item_admin = '\
 			    <div class="mb-1"><span class="item-phone"></span></div>\
 		        <small class="item-email"></small>\
               </div>\
-              <button type="button" class="patient-button safe-patient p-2 bd-highlight btn btn-success"><i class="fa fa-check" aria-hidden="true"></i></button>\
               <button type="button" class="patient-button password-patient p-2 bd-highlight btn btn-primary"><i class="fa fa-key" aria-hidden="true"></i></button>\
               <button type="button" class="patient-button delete-patient p-2 bd-highlight btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>\
 			</div>\
@@ -23,7 +22,7 @@ $.ajaxSetup({
 
 function update_users(text){
 
-    let url_parameterized = admin_URL + `?all=yes&role=%25&email=${$("#admin-mail-input").val()}&\
+    let url_parameterized = admin_URL + `?all=yes&role=${$("#admin-role-input").val()}&email=${$("#admin-mail-input").val()}&\
 phone=${$("#admin-phone-input").val()}&name=${$("#admin-name-input").val()}&page=${page_admin - 1}&psize=${$("#admin-page-size-input").val()}`
 
     $.get(url_parameterized, function(data, status){
@@ -51,8 +50,8 @@ phone=${$("#admin-phone-input").val()}&name=${$("#admin-name-input").val()}&page
                     item = item.addClass("active");
                 }
 
-                item.appendTo($(".pagination-admin"))
-                foo++;
+            item.appendTo($(".pagination-admin"))
+            foo++;
 
             } while ( foo <= page_num );
 
@@ -104,6 +103,7 @@ phone=${$("#admin-phone-input").val()}&name=${$("#admin-name-input").val()}&page
                 $("#admin-emailInputModal").val(patient.email);
                 $("#admin-phoneInputModal").val(patient.phone);
                 $("#admin-hesInputModal").val(patient.hescode);
+                $("#admin-roleInputModal").val(patient.role);
                 $("#admin-tcInputModal").val(patient.tcno);
                 $("#admin-patientModal").modal("show");
                 $("#admin-patientModalSave").unbind(); // Clear events for save button
@@ -115,7 +115,7 @@ phone=${$("#admin-phone-input").val()}&name=${$("#admin-name-input").val()}&page
                                               $("#admin-tcInputModal").val(),
                                               $("#admin-hesInputModal").val(),
                                               1,
-                                              $("#admin-patientModalRole :selected").text());
+                                              $("#admin-roleInputModal").val());
                     new_patient.update();
                     $("#admin-patientModal").modal("hide");
                     update_users("");
@@ -130,6 +130,7 @@ $(document).ready(function(){
     update_users("");
 
     $("#admin-name-input").on('input', update_users);
+    $("#admin-role-input").change(update_users);
     $("#admin-phone-input").on('input', update_users);
     $("#admin-mail-input").on('input', update_users);
     $("#admin-page-size-input").on('input', update_users);
@@ -145,9 +146,10 @@ $(document).ready(function(){
                                       $("#admin-tcInputModal").val(),
                                       $("#admin-hesInputModal").val(),
                                       1,
-                                      $("#admin-patientModalRole :selected").text());
+                                      $("#admin-roleInputModal").val());
             patient.create();
             $("#admin-patientModal").modal("hide");
+            update_patients("");
         });
     });
 });
