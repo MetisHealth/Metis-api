@@ -1,9 +1,13 @@
-package com.yigitcolakoglu.Clinic;
-
-import com.yigitcolakoglu.Clinic.Appointment;
+package com.yigitcolakoglu.Metis;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,14 +17,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.GrantedAuthority;
+
+import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import com.fasterxml.jackson.databind.ObjectMapper; 
+import com.fasterxml.jackson.databind.node.ObjectNode; 
 
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Date;
@@ -92,7 +103,7 @@ public class ApiController {
                 return new JSONResponse(400, "Dates you have submitted overlaps with already existing ones.");
             }
 
-            if(userRepository.checkDoctor(appointment.getPatient().getId(), appointment.getDoctor()).size() != 1){
+            if(userRepository.checkDoctor(appointment.getPatient().getEmail(), appointment.getDoctor()).size() != 1){
                 return new JSONResponse(500, "This patient either does not exist or is not your patient.");
             } 
             
@@ -122,6 +133,7 @@ public class ApiController {
             }
             return new JSONResponse(200, "Success");
         } 
+
         private String capitalizeFirstLetters(String phrase){
             String[] words = phrase.trim().toLowerCase().split(" ");
             String finalPhrase = "";
@@ -132,21 +144,42 @@ public class ApiController {
         }
 
         @GetMapping("/api/patients")
-        public PatientsResponse getPatient(@RequestParam(value="email") String email, @RequestParam(value="phone") String phone, @RequestParam(value="name") String name, @RequestParam(value="page", defaultValue="0") int page, @RequestParam(value="psize", defaultValue="20") int psize, Authentication auth) {
+        public StandardResponse getPatient(@RequestParam(value="email") String email, @RequestParam(value="phone") String phone, @RequestParam(value="name") String name, @RequestParam(value="page", defaultValue="0") int page, @RequestParam(value="psize", defaultValue="20") int psize, @RequestParam(value="role") String role, @RequestParam(value="all", defaultValue="no") String listAll, Authentication auth) {
             Pageable pageable = PageRequest.of(page < 0 ? 0 : page, psize);
-            
-            User doctor = userRepository.findByEmail(auth.getName());
-            List<User> patients = userRepository.searchUser(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), doctor, "PATIENT", pageable); // TODO Dynamic doctor
-            
+            if(checkRole(auth.getAuthorities(), "PATIENT")){
+               return new JSONResponse(403, "You are not authorized to do this!"); 
+            }
+
+            if((!role.equals("PATIENT") || listAll.equals("yes")) && !checkRole(auth.getAuthorities(),"ADMIN")){
+               return new JSONResponse(403, "You cannot list this role!"); 
+            }
+
+            List<User> patients;
+            long patient_num;
+            if(listAll.equals("yes")){
+                patients = userRepository.searchUser(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), role, pageable); 
+                patient_num = userRepository.countPatients(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), role);
+            }else{
+                User doctor = userRepository.findByEmail(auth.getName());
+                patients = userRepository.searchUser(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), doctor, role, pageable); 
+                patient_num = userRepository.countPatients(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), doctor, role);
+            }
             if(patients.size() > 1000){
                 patients.clear();
             }
-            long patient_num = userRepository.countPatients(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), doctor, "PATIENT");
             return new PatientsResponse(patient_num, patients); // TODO Write a method in UserRepository to get the number of patients. As this definitely won't work. 
+        }
+
+        private boolean checkRole(Collection<? extends GrantedAuthority> authorities, String role){
+            return authorities.stream().anyMatch(auth -> auth.getAuthority().equals(role));
         }
 
         @PostMapping(path="/api/patients/create")
         public JSONResponse postPatientCreate(@RequestBody String body, Authentication auth){
+            if(checkRole(auth.getAuthorities(), "PATIENT")){
+               return new JSONResponse(403, "You are not authorized to do this!"); 
+            }
+
             // TODO Implement CSRF Protection
             User patient;
             try{ // Parse the POST request body into an Appointment object.
@@ -154,6 +187,10 @@ public class ApiController {
             }catch(Exception ex){
                 System.err.println(ex.toString());
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
+            }
+
+            if(!patient.getRole().equals("PATIENT") && !checkRole(auth.getAuthorities(),"ADMIN")){
+               return new JSONResponse(403, "You cannot list this role!"); 
             }
             patient.setDoctor(userRepository.findByEmail(auth.getName()));
             patient.setName(capitalizeFirstLetters(patient.getName()));
@@ -165,10 +202,43 @@ public class ApiController {
             }
             return new JSONResponse(200, "Success");
         } 
+        
+        private Map<String, String> bodyToMap(String bodyStr){
+           Map<String, String> body = new HashMap<>();
+           String[] values = bodyStr.split("&");
+           for (String value : values) {
+               String[] pair = value.split("=");
+               if (pair.length == 2) {
+                   body.put(pair[0], pair[1]);
+               }
+           }
+           return body;
+        }
+
+        @PostMapping(path="/api/password")
+        @Transactional(propagation = Propagation.REQUIRED)
+        public JSONResponse postDoctorPassword(@RequestBody String body, Authentication auth){
+            Map<String, String> data = this.bodyToMap(body); 
+
+            if(!(data.containsKey("email") && data.containsKey("newPassword"))){
+                return new JSONResponse(500, "Missing parameters!");
+            }
+            if(userRepository.checkDoctor(data.get("email"), userRepository.findByEmail(auth.getName())).size() != 1){
+                return new JSONResponse(500, "This patient either does not exist or is not your patient.");
+            }
+            BCryptPasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
+            userRepository.updatePassword(data.get("email"), pwdEncoder.encode(data.get("newPassword")));
+            return new JSONResponse(200, "Password changed succcesfully.");
+        } 
 
         @PostMapping(path="/api/patients/update")
         @Transactional(propagation = Propagation.REQUIRED)
         public JSONResponse postPatientUpdate(@RequestBody String body, Authentication auth){
+
+            if(checkRole(auth.getAuthorities(), "PATIENT")){
+               return new JSONResponse(403, "You are not authorized to do this!"); 
+            }
+
             // TODO Implement CSRF Protection
             User patient;
             try{ // Parse the POST request body into an Appointment object.
@@ -177,6 +247,9 @@ public class ApiController {
                 System.err.println(ex.toString());
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
+            if(!patient.getRole().equals("PATIENT") && !checkRole(auth.getAuthorities(),"ADMIN")){
+               return new JSONResponse(403, "You cannot list this role!"); 
+            }
             patient.setName(capitalizeFirstLetters(patient.getName()));
             try{
                 int edited = this.userRepository.updatePatient(patient.getName(), patient.getEmail(), patient.getPhone(), patient.getTCNo(),patient.getHESCode(), patient.getId(), userRepository.findByEmail(auth.getName()));
@@ -192,6 +265,9 @@ public class ApiController {
         public JSONResponse postPatientDelete(@RequestBody String body, Authentication auth){
             // TODO Implement CSRF Protection
             // TODO more code to delete patients who have appointments
+            if(checkRole(auth.getAuthorities(), "PATIENT")){
+               return new JSONResponse(403, "You are not authorized to do this!"); 
+            }
             User patient;
             try{ // Parse the POST request body into an Appointment object.
                 patient = new ObjectMapper().readValue(body, User.class);
@@ -199,6 +275,9 @@ public class ApiController {
                 System.err.println(ex.toString());
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
+            if(!patient.getRole().equals("PATIENT") && !checkRole(auth.getAuthorities(),"ADMIN")){
+               return new JSONResponse(403, "You cannot list this role!"); 
+            }
             patient.setName(capitalizeFirstLetters(patient.getName()));
             try{
                 this.userRepository.deletePatient(patient.getId(), userRepository.findByEmail(auth.getName()));
@@ -208,13 +287,82 @@ public class ApiController {
             }
             return new JSONResponse(200, "Success");
         } 
+
+        @GetMapping(path="/api/profile")
+        public User getProfile(Authentication auth){
+            return userRepository.findByEmail(auth.getName());
+        } 
+        
+        @PostMapping(path="/api/profile/update")
+        @Transactional(propagation = Propagation.REQUIRED)
+        public StandardResponse postProfileUpdate(@RequestBody String body, Authentication auth){
+            User profile;
+            try{ // Parse the POST request body into an Appointment object.
+                profile = new ObjectMapper().readValue(body, User.class);
+            }catch(Exception ex){
+                System.err.println(ex.toString());
+                return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
+            }
+            profile.setName(capitalizeFirstLetters(profile.getName()));
+            try{
+                int edited = this.userRepository.updateUser(profile.getName(), profile.getEmail(), profile.getPhone(), profile.getTCNo(),profile.getHESCode(), profile.getLocale(), userRepository.findByEmail(auth.getName()).getId());
+            }catch(DataIntegrityViolationException ex){
+                System.out.println(ex.toString());
+                return new JSONResponse(500, "A user with that e-mail already exists!");
+            }
+            return new JSONResponse(200, "Success");
+        }
+
+        @GetMapping(path="/api/hes/sendsms")
+        public JSONResponse sendHesSMS(Authentication auth){ // TODO Error handling
+            String phone = userRepository.findByEmail(auth.getName()).getPhone();
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode request_obj = mapper.createObjectNode();
+            request_obj.put("phone",phone);
+            HttpEntity<String> request = new HttpEntity<String>(request_obj.toString(), headers);
+            ResponseEntity<String> result = restTemplate.postForEntity("https://hessvc.saglik.gov.tr/api/send-code-to-login", request, String.class); 
+            return new JSONResponse(200, "Sent SMS");
+        }
+
+        @GetMapping(path="/api/hes/smscode")
+        @Transactional(propagation = Propagation.REQUIRED)
+        public JSONResponse sendHesSMS(@RequestParam(value = "code") String smsCode ,Authentication auth){ // TODO Error handling
+            String phone = userRepository.findByEmail(auth.getName()).getPhone();
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode request_obj = mapper.createObjectNode();
+            request_obj.put("phone",phone);
+            request_obj.put("password",smsCode);
+            request_obj.put("rememberMe",true);
+            HttpEntity<String> request = new HttpEntity<String>(request_obj.toString(), headers);
+            String token = "";
+            try{
+                ResponseEntity<String> result = restTemplate.postForEntity("https://hessvc.saglik.gov.tr/api/authenticate-with-code", request, String.class); 
+                JSONObject response = new JSONObject(result.getBody());
+                token = response.getString("id_token");
+            }catch(Exception e){
+                return new JSONResponse(500, "Wrong code");
+            }
+            if(!token.isEmpty()){
+                userRepository.updateHesToken(auth.getName(), token);
+            }else{
+                return new JSONResponse(500, "An unknown error occured.");
+            }
+            return new JSONResponse(200, "Sent SMS");
+        }
 }
 
-class PatientsResponse{
+class PatientsResponse implements StandardResponse{
     public final long patient_num;
     public final List<User> patients;
     public PatientsResponse(long num, List<User> patients){
         this.patient_num = num;
+        
         this.patients = patients;
     }
 }

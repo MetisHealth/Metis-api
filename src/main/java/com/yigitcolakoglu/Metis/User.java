@@ -1,4 +1,4 @@
-package com.yigitcolakoglu.Clinic;
+package com.yigitcolakoglu.Metis;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
@@ -30,6 +30,14 @@ public class User{
     private String HES_code;
     private String phone;
 
+    private boolean HES_api_works = false;
+    @JsonIgnore 
+    private String HES_id_token;
+
+    private boolean WhereBy_api_works = false;
+    private String WhereBy_api_token = "";
+
+    private String locale = "tr";
     private boolean safe;
 
     @JsonIgnore @OneToMany(mappedBy="patient")
@@ -54,15 +62,13 @@ public class User{
     protected String email;
 
     @JsonIgnore
-    protected boolean enabled, expiredCreds, expired, locked = false;
-   
-    @JsonIgnore
     private boolean checkSafe(){
         return true;
     }
     // getters
     public String getName()        { return this.name;     }
     public String getTCNo()        { return this.TC_no;    }
+    public String getLocale()        { return this.locale;    }
     public String getPassword()    { return this.password;    }
     public String getEmail()       { return this.email;    }
     public String getPhone()       { return this.phone;    }
@@ -70,7 +76,6 @@ public class User{
     public List<DisabledRule> getDisabled(){ return this.disabledRules; }
     public String getHESCode()             { return this.HES_code; }
     public long getId()                    { return this.id;       }
-    public boolean getEnabled()            { return this.enabled;       }
     public boolean getSafe()            { return this.safe;       }
     public String getRole()                { return this.role;       }
 

@@ -1,8 +1,8 @@
-const URL = window.location.protocol + "//" + window.location.host + "/api/patients";
+var URL = window.location.protocol + "//" + window.location.host + "/api/patients";
 var page = 1;
 
-const pagination_prev = '<li class="page-item"><a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>'
-const pagination_next = '<li class="page-item"><a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>'
+const pagination_prev = '<li class="page-item page-item-patient"><a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>'
+const pagination_next = '<li class="page-item page-item-patient"><a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>'
 const list_item = '\
 		  <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">\
 			<div class="d-flex w-100 justify-content-between">\
@@ -24,7 +24,7 @@ $.ajaxSetup({
 function update_patients(text){
 
     let url_parameterized = URL + `?email=${$("#mail-input").val()}&\
-phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}&psize=${$("#page-size-input").val()}`
+phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}&psize=${$("#page-size-input").val()}&role=PATIENT`
 
     $.get(url_parameterized, function(data, status){
         console.log(data);
@@ -33,25 +33,25 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
             page = page_num;
             update_patients("");
         }
-        if ( page_num != $(".page-item")/2 - 2 ){
+        if ( page_num != $(".page-item-patient")/2 - 2 ){
             let foo = 1;
 
-            $(".pagination").empty();
+            $(".pagination-patient").empty();
             let prev = $(pagination_prev);
             if(page == 1){
                 prev.addClass("disabled");
             }
-            prev.appendTo($(".pagination"));
+            prev.appendTo($(".pagination-patient"));
             let item = null;
 
             do{
-                item = $(`<li class="page-item"><a class="page-link" href="#">${foo}</li>`)
+                item = $(`<li class="page-item page-item-patient"><a class="page-link" href="#">${foo}</li>`)
 
                 if(page == foo){
                     item = item.addClass("active");
                 }
 
-                item.appendTo($(".pagination"))
+                item.appendTo($(".pagination-patient"))
                 foo++;
 
             } while ( foo <= page_num );
@@ -60,9 +60,9 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
             if(page == page_num){
                 next.addClass("disabled");
             }
-            next.appendTo($(".pagination"));
+            next.appendTo($(".pagination-patient"));
 
-            $(".page-item").on("click", function(event){
+            $(".page-item-patient").on("click", function(event){
                 let foo = event.target.innerText;
                 if( foo == "«" ){
                     page--;
@@ -76,11 +76,11 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
             });
         }
 
-        if (page != parseInt($(".page-item.active").first().text())){
-            $(".page-item.active").removeClass("active");
+        if (page != parseInt($(".page-item-patient.active").first().text())){
+            $(".page-item-patient.active").removeClass("active");
 
-            $(".page-item").eq(page).addClass("active");
-            $(".page-item").eq(page + page_num + 2).addClass("active");
+            $(".page-item-patient").eq(page).addClass("active");
+            $(".page-item-patient").eq(page + page_num + 2).addClass("active");
         }
         $(".patient-list").empty();
         data.patients.forEach(function(patient){
@@ -97,6 +97,23 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
             item.find(".password-patient").on("click", function(e){
                 e.stopPropagation(); // TODO implement actual password change
                 $("#passwordModal").modal("show");
+                $("#passwordModalSave").on("click", function(e){
+                    let password_change_url = window.location.protocol + "//" + window.location.host + "/api/password";
+					$.ajax({
+						contentType: 'text/plain',
+						data: `newPassword=${$("#passwordModalPassword").val()}&email=${patient.email}`,
+						dataType: 'form-data',
+						success: function(data){
+							console.log(data);
+						},
+						error: function(){
+							console.log("an erro");
+						},
+						processData: false,
+						type: 'POST',
+						url: password_change_url
+					});
+                });
             });
             item.on("click", function(event){
                 $("#patientModalTitle").text("Edit Patient");
@@ -113,7 +130,9 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
                                               $("#phoneInputModal").val(),
                                               $("#emailInputModal").val(),
                                               $("#tcInputModal").val(),
-                                              $("#hesInputModal").val());
+                                              $("#hesInputModal").val(),
+                                                1,
+                                                "PATIENT");
                     new_patient.update();
                     $("#patientModal").modal("hide");
                     update_patients("");
@@ -141,10 +160,18 @@ $(document).ready(function(){
                                       $("#phoneInputModal").val(),
                                       $("#emailInputModal").val(),
                                       $("#tcInputModal").val(),
-                                      $("#hesInputModal").val());
+                                      $("#hesInputModal").val(),
+                                      1,
+                                      "PATIENT");
             patient.create();
             $("#patientModal").modal("hide");
         });
+    });
+    $("#passwordModalGenerate").on("click", function(e){
+		var pwdChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+		var pwdLen = 12;
+		var randPassword = Array(pwdLen).fill(pwdChars).map(function(x) { return x[Math.floor(Math.random() * x.length)] }).join('');
+		$("#passwordModalPassword").val(randPassword);
     });
 });
 

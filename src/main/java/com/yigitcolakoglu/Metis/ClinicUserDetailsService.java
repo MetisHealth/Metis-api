@@ -1,4 +1,4 @@
-package com.yigitcolakoglu.Clinic;
+package com.yigitcolakoglu.Metis;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -45,4 +45,3 @@ public class ClinicUserDetailsService implements UserDetailsService{
     }
 
 }
-

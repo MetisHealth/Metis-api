@@ -149,7 +149,7 @@ $(window).ready(function() {
     });
 
     $("#newAppointmentPatient").on("input", function(event){
-        let url_parameterized =  window.location.protocol + "//" + window.location.host + "/api/patients" + `?email=&phone=&name=${$("#newAppointmentPatient").val()}&page=&psize=`
+        let url_parameterized =  window.location.protocol + "//" + window.location.host + "/api/patients" + `?role=PATIENT&email=&phone=&name=${$("#newAppointmentPatient").val()}&page=&psize=`
 
         $.get(url_parameterized, function(data, status){
             console.log(data);

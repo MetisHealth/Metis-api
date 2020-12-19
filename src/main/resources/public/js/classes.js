@@ -3,8 +3,8 @@ $.ajaxSetup({
 });
 
 let Patient = class {
-    constructor(id, name, phone, mail, tc, hes, safe){
-        this.role = "PATIENT"
+    constructor(id, name, phone, mail, tc, hes, safe, role){
+        this.role = role
         this.id = id;
         this.name = name;
         this.phone = phone;
@@ -35,7 +35,7 @@ let Patient = class {
     }
 
     static from(json){
-        return Object.assign(new Patient(null, null, null, null, null, null), json);
+        return Object.assign(new Patient(null, null, null, null, null, null, null), json);
     }
 
 }

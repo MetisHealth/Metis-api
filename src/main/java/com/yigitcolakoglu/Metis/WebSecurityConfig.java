@@ -1,4 +1,4 @@
-package com.yigitcolakoglu.Clinic;
+package com.yigitcolakoglu.Metis;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,9 +34,12 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
-
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 
+    @Bean
+    public AuthenticationSuccessHandler myAuthenticationSuccessHandler(){
+        return new SimpleAuthenticationSuccessHandler();       
+    }
     @Bean 
     public UserDetailsService userDetailsService(){
         return new ClinicUserDetailsService();
@@ -73,12 +76,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
 	protected void configure(HttpSecurity http) throws Exception {
 		http
 			.authorizeRequests((authorize) -> authorize
-					.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-					.anyRequest().authenticated()
+                    .antMatchers("/doctor/**").hasAnyAuthority("DOCTOR","ADMIN")
+                    .antMatchers("/admin/**").hasAuthority("ADMIN")
+                    .antMatchers("/patient/**").hasAnyAuthority("DOCTOR","ADMIN","PATIENT")
 			)
 			.cors().and().csrf().disable() // TODO Re-Enable csrf protection
 			.formLogin((formLogin) -> formLogin
 					.permitAll()
+                    .successHandler(this.myAuthenticationSuccessHandler())
 			);
 	}
     

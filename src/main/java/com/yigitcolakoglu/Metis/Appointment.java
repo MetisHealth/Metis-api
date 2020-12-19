@@ -1,4 +1,4 @@
-package com.yigitcolakoglu.Clinic;
+package com.yigitcolakoglu.Metis;
 
 import java.util.Date;
 

@@ -1,4 +1,4 @@
-package com.yigitcolakoglu.Clinic;
+package com.yigitcolakoglu.Metis;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
@@ -44,7 +44,7 @@ public class ClinicUserDetails implements UserDetails{
 
     @Override
     public boolean isEnabled(){
-        return user.getEnabled();
+        return true;
     }
 
     @Override 
@@ -53,4 +53,3 @@ public class ClinicUserDetails implements UserDetails{
        return Arrays.asList(authority);
     }
 }
-

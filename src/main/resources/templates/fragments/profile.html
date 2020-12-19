@@ -1,0 +1,88 @@
+<div id="profile-container" class="content-container hidden" th:fragment="profile">
+    <div class="profile-group">
+        <h5>Profile Information: </h5>
+        <br>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">Name: </span>
+          </div>
+          <input id="profile-name" type="text" class="form-control" placeholder="Name" aria-label="Name">
+        </div>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">Phone: </span>
+          </div>
+          <input id="profile-phone" type="text" class="form-control" placeholder="Phone" aria-label="Phone">
+        </div>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">E-Mail: </span>
+          </div>
+          <input id="profile-email" type="text" class="form-control" placeholder="Email" aria-label="Phone">
+        </div>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">HES Code: </span>
+          </div>
+          <input id="profile-hes-code" type="text" class="form-control" placeholder="HES Code" aria-label="Phone">
+        </div>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">TC No: </span>
+          </div>
+          <input id="profile-tc" type="text" class="form-control" placeholder="Tc No" aria-label="Phone">
+        </div>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <label class="input-group-text" for="inputGroupSelect01">Locale: </label>
+          </div>
+          <select class="custom-select" id="profile-locale">
+            <option selected>Choose...</option>
+            <option value="tr">Turkish</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <button id="profile-save" type="button" class="btn btn-primary" style="width: 10%; margin-left:90%;"> Save </button>
+    </div>
+    <div class="profile-group">
+        <h5>Password: </h5>
+        <br>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">Current Password: </span>
+          </div>
+          <input id="profile-password-current" type="text" class="form-control" placeholder="Current Password" aria-label="Name">
+        </div>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">New Password: </span>
+          </div>
+          <input id="profile-password-name" type="text" class="form-control" placeholder="New Password" aria-label="Name">
+        </div>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text">Confirm: </span>
+          </div>
+          <input id="profile-password-new" type="text" class="form-control" placeholder="Confirm New Password" aria-label="Name">
+        </div>
+        <button id="profile-password-save" type="button" class="btn btn-primary" style="width: 10%; margin-left:90%;"> Save </button>
+    </div>
+    <div th:if="${display_api} == true" class="profile-group">
+        <h5>HES API: </h5>
+        <button style="margin-bottom:1%" id="profile-hes-send-sms" type="button" class="btn btn-primary">Send SMS</button>
+        <div style="margin-bottom:1%" id="profile-hes-code-group" class="input-group mb-3">
+          <input id="profile-hes-sms-code" type="text" class="form-control" placeholder="SMS Code" aria-label="Recipient's username" aria-describedby="basic-addon2">
+          <div class="input-group-append">
+            <button class="btn btn-outline-primary" type="button" id="profile-hes-save">Save</button>
+          </div>
+        </div>
+        <br>
+        <h5>WhereBy API: </h5>
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="WhereBy API Key" aria-label="Recipient's username" aria-describedby="basic-addon2">
+          <div class="input-group-append">
+            <button class="btn btn-outline-primary" type="button">Save</button>
+          </div>
+        </div>
+    </div>
+</div>

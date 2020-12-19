@@ -1,6 +1,6 @@
-package com.yigitcolakoglu.Clinic;
+package com.yigitcolakoglu.Metis;
 
-public class JSONResponse{
+public class JSONResponse implements StandardResponse{
     private int code;
     private String message;
     private Appointment appointment;

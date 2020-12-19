@@ -1,4 +1,4 @@
-package com.yigitcolakoglu.Clinic;
+package com.yigitcolakoglu.Metis;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,10 +15,17 @@ public class WebController {
     @Autowired
     private UserRepository userRepository;
         
-    @RequestMapping("/")
-	public String calendar(Model model, Authentication auth) {
+    @RequestMapping("/doctor")
+	public String doctor(Model model, Authentication auth) {
+        model.addAttribute("display_api", true);
         model.addAttribute("name", userRepository.findByEmail(auth.getName()).getName());
-		return "main";
+		return "doctor";
 	}
 
+    @RequestMapping("/admin")
+	public String admin(Model model, Authentication auth) {
+        model.addAttribute("display_api", true);
+        model.addAttribute("name", userRepository.findByEmail(auth.getName()).getName());
+		return "admin";
+	}
 }
