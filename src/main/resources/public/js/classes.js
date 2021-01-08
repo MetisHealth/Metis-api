@@ -41,12 +41,11 @@ let Patient = class {
 }
 
 let Appointment = class{
-    constructor(id, start, end, patient, price, online, receipt){
+    constructor(id, start, end, patient, online, receipt){
         this.id = id;
         this.receipt = receipt;
         this.start = start;
         this.end = end;
-        this.price = price;
         this.online = online;
         this.patient = patient;
     }

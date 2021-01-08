@@ -13,6 +13,9 @@ public interface UserRepository extends JpaRepository<User, Integer>{
         @Query("SELECT p FROM User p WHERE p.email = :email AND p.doctor = :doctor")
         List<User> checkDoctor(@Param("email") String email,  @Param("doctor") User doctor);
 
+        @Query("SELECT p FROM User p WHERE p.role = PATIENT")
+        List<User> getAllPatients();
+
         @Query("SELECT p FROM User p WHERE p.id = :id AND p.doctor = :doctor")
         List<User> checkDoctor(@Param("id") long id,  @Param("doctor") User doctor);
 

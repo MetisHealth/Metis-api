@@ -2,6 +2,11 @@ package com.yigitcolakoglu.Metis;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpEntity;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -14,12 +19,22 @@ import javax.persistence.Transient;
 import javax.persistence.Column;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.json.JSONObject;
+
+import javax.servlet.http.HttpServletRequest;
+import com.fasterxml.jackson.databind.ObjectMapper; 
+import com.fasterxml.jackson.databind.node.ObjectNode; 
+
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+
 import java.util.Collection;
 import java.util.List;
 
 @Entity
 @Table(name="users")
-public class User{
+public class User {
 
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -61,12 +76,30 @@ public class User{
     protected String password;
 
     @Column(unique = true, nullable=false)
-    protected String email;
+    protected String email = "";
 
     @JsonIgnore
     private boolean checkSafe(){
         return true;
     }
+
+    @JsonIgnore 
+    public boolean checkHesCode(){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer "+this.doctor.getHesToken());
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode request_obj = mapper.createObjectNode();
+        request_obj.put("hes_code",this.HES_code);
+        HttpEntity<String> request = new HttpEntity<String>(request_obj.toString(), headers);
+        String status = "";
+        ResponseEntity<String> result = restTemplate.postForEntity("https://hessvc.saglik.gov.tr/services/hescodeproxy/api/check-hes-code", request, String.class); 
+        JSONObject response = new JSONObject(result.getBody());
+        status = response.getString("current_health_status");
+        return status.equals("RISKLESS");
+    }
+
     // getters
     public String getName()        { return this.name;     }
     public String getTCNo()        { return this.TC_no;    }
@@ -80,6 +113,8 @@ public class User{
     public String getHesToken() { return this.HES_id_token; }
     public String getHESCode()             { return this.HES_code; }
     public String getWherebyUrl()             { return this.WhereBy_URL; }
+    @JsonIgnore
+    public User getDoctor() { return this.doctor; }
     public long getId()                    { return this.id;       }
     public boolean getSafe()            { return this.safe;       }
     public String getRole()                { return this.role;       }

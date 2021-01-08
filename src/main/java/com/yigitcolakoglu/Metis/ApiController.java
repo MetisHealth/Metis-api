@@ -1,5 +1,8 @@
 package com.yigitcolakoglu.Metis;
 
+import java.lang.Exception;
+import io.sentry.Sentry;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
@@ -29,9 +32,11 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Date;
@@ -72,7 +77,7 @@ public class ApiController {
                     end = format.parse(endStr);
                 }
             }catch( ParseException ex ){
-                System.err.println(ex.toString());
+                Sentry.captureException(ex);
             }
 
             User doctor = userRepository.findByEmail(auth.getName());
@@ -92,7 +97,7 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 appointment = new ObjectMapper().readValue(body, Appointment.class);
             }catch(Exception ex){
-                System.err.println(ex.toString());
+                Sentry.captureException(ex);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
             // TODO check if doctor ids match with cookie
@@ -122,13 +127,13 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 appointment = new ObjectMapper().readValue(body, Appointment.class);
             }catch(Exception ex){
-                System.err.println(ex.toString());
+                Sentry.captureException(ex);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
             try{
                 this.appointmentRepository.deleteAppointment(appointment.getId(), userRepository.findByEmail(auth.getName()));
             }catch(DataIntegrityViolationException ex){
-                System.out.println(ex.toString());
+                Sentry.captureException(ex);
                 return new JSONResponse(500, "Can't delete that!");
             }
             return new JSONResponse(200, "Success");
@@ -173,6 +178,7 @@ public class ApiController {
         private boolean checkRole(Collection<? extends GrantedAuthority> authorities, String role){
             return authorities.stream().anyMatch(auth -> auth.getAuthority().equals(role));
         }
+
         private String removeChar(String str, char c){
             String final_str = "";
             for(int i = 0; i < str.length(); i++){
@@ -193,12 +199,15 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 patient = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
-                System.err.println(ex.toString());
+                Sentry.captureException(ex);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
 
             if(!patient.getRole().equals("PATIENT") && !checkRole(auth.getAuthorities(),"ADMIN")){
                return new JSONResponse(403, "You cannot create this role!"); 
+            }
+            if(patient.getEmail().isEmpty()){
+                patient.setEmail(UUID.randomUUID().toString());
             }
             patient.setDoctor(userRepository.findByEmail(auth.getName()));
             patient.setName(capitalizeFirstLetters(patient.getName()));
@@ -206,7 +215,7 @@ public class ApiController {
             try{
                 this.userRepository.save(patient);
             }catch(DataIntegrityViolationException ex){
-                System.err.println(ex.toString());
+                Sentry.captureException(ex);
                 return new JSONResponse(500, "A user with that e-mail already exists!");
             }
             return new JSONResponse(200, "Success");
@@ -271,7 +280,7 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 patient = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
-                System.err.println(ex.toString());
+                Sentry.captureException(ex);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
             if(checkRole(auth.getAuthorities(), "DOCTOR") && userRepository.checkDoctor(patient.getId(), userRepository.findByEmail(auth.getName())).size() != 1){
@@ -285,7 +294,7 @@ public class ApiController {
             try{
                 int edited = this.userRepository.updatePatient(patient.getName(), patient.getEmail(), patient.getPhone(), patient.getTCNo(), patient.getHESCode(), patient.getRole(), patient.getId());
             }catch(DataIntegrityViolationException ex){
-                System.out.println(ex.toString());
+                Sentry.captureException(ex);
                 return new JSONResponse(500, "A user with that e-mail already exists!");
             }
             return new JSONResponse(200, "Success");
@@ -303,7 +312,7 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 patient = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
-                System.err.println(ex.toString());
+                Sentry.captureException(ex);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
             if(!patient.getRole().equals("PATIENT") && !checkRole(auth.getAuthorities(),"ADMIN")){
@@ -313,7 +322,7 @@ public class ApiController {
             try{
                 this.userRepository.deletePatient(patient.getId(), userRepository.findByEmail(auth.getName()));
             }catch(DataIntegrityViolationException ex){
-                System.out.println(ex.toString());
+                Sentry.captureException(ex);
                 return new JSONResponse(500, "A user with that e-mail already exists!");
             }
             return new JSONResponse(200, "Success");
@@ -331,7 +340,7 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 profile = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
-                System.err.println(ex.toString());
+                Sentry.captureException(ex);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
             profile.setName(capitalizeFirstLetters(profile.getName()));
@@ -401,30 +410,17 @@ public class ApiController {
             if(userRepository.checkDoctor(id, doctor).size() != 1){
                 return new JSONResponse(500, "This patient either does not exist or is not your patient.");
             }
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer "+doctor.getHesToken());
-            ObjectMapper mapper = new ObjectMapper();
-            ObjectNode request_obj = mapper.createObjectNode();
-            request_obj.put("hes_code",userRepository.findById(id).getHESCode());
-            HttpEntity<String> request = new HttpEntity<String>(request_obj.toString(), headers);
-            String status = "";
+            boolean result;
             try{
-                ResponseEntity<String> result = restTemplate.postForEntity("https://hessvc.saglik.gov.tr/services/hescodeproxy/api/check-hes-code", request, String.class); 
-                JSONObject response = new JSONObject(result.getBody());
-                status = response.getString("current_health_status");
+                result = userRepository.findById(id).checkHesCode();
             }catch(Exception e){
+                Sentry.captureException(e);
                 return new JSONResponse(500, "An issue occured");
             }
-            if(status.equals("RISKLESS")){
-                userRepository.updateCovidStatus(id, true);
-                return new JSONResponse(200, "safe");            
-            }else{
-                userRepository.updateCovidStatus(id, false);
-                return new JSONResponse(200, "unsafe");
-            }
+            userRepository.updateCovidStatus(id, result);
+            return new JSONResponse(200, result ? "safe":"unsafe");            
         }
+
 }
 
 class PatientsResponse implements StandardResponse{

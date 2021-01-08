@@ -28,4 +28,25 @@ public class WebController {
         model.addAttribute("name", userRepository.findByEmail(auth.getName()).getName());
 		return "admin";
 	}
+
+    @RequestMapping("/")
+    public String index(Model model, Authentication auth){
+        if(auth == null){
+            return "redirect:/login";
+        }
+        if(!auth.isAuthenticated()){
+            return "redirect:/login";
+        }
+
+        model.addAttribute("display_api", true);
+        model.addAttribute("name", userRepository.findByEmail(auth.getName()).getName());
+        if(auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("DOCTOR"))){
+            return "doctor";         
+        }else if(auth.getAuthorities().stream().anyMatch(a-> a.getAuthority().equals("ADMIN"))){
+            return "admin";
+        }else if(auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("PATIENT"))){
+            return "patient";
+        }    
+        return null;
+    }
 }

@@ -1,6 +1,6 @@
 $(document).ready(function(){
     $.get("/api/profile", function(data, status){
-        Metis.profile = data;
+        window.Metis.profile = data;
         $("#profile-name").val(data.name);
         $("#profile-email").val(data.email);
         $("#profile-hes-code").val(data.hescode);

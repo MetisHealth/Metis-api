@@ -1,6 +1,6 @@
 const list_item_calendar = '<li class="patient-item-small list-group-item"></li>'
 
-var appointment = new Appointment(null, null, null, null, null, false, false);
+var appointment = new Appointment(null, null, null, null, false, false);
 var last_clicked = null;
 
 $(window).ready(function() {
@@ -48,8 +48,6 @@ $(window).ready(function() {
             let end = info.end;
             $("#newAppointmentEnd").val(`${(end.getDate() < 10) ? "0" + (end.getDate()).toString() : end.getDate()}/${(end.getMonth() + 1 < 10) ? "0" + (end.getMonth()+1).toString() : end.getMonth() + 1}/${end.getFullYear()}, ${(end.getHours() < 10) ? "0" + end.getHours().toString() : end.getHours()}:${(end.getMinutes() < 10) ? "0" + end.getMinutes().toString(): end.getMinutes()}`);
             $("#newAppointmentStart").val(`${(start.getDate() < 10) ? "0" + (start.getDate()).toString() : start.getDate()}/${(start.getMonth() + 1 < 10) ? "0" + (start.getMonth()+1).toString() : start.getMonth() + 1}/${start.getFullYear()}, ${(start.getHours() < 10) ? "0" + start.getHours().toString() : start.getHours()}:${(start.getMinutes() < 10) ? "0" + start.getMinutes().toString(): start.getMinutes()}`);
-            $("#newAppointmentReceipt").prop("checked", false);
-            $("#payment-info-container").toggle(false);
 			$("#newAppointmentModal").modal("show");
         },
         eventDidMount: function(info){
@@ -60,16 +58,10 @@ $(window).ready(function() {
             $("#popoverPhone").html(info.event.extendedProps.phone);
             $("#popoverCovid").html(info.event.extendedProps.safe ? "NO": "YES");
             $("#popoverUrl").html(`<a target="_blank" rel="noopener noreferrer" href="${window.Metis.profile.wherebyUrl}">Link</a>`);
-            $("#popoverPrice").html(info.event.extendedProps.price);
             if(!info.event.extendedProps.online){
                 $("#popoverUrlSection").addClass("hide");
             }else{
                 $("#popoverUrlSection").removeClass("hide");
-            }
-            if(!info.event.extendedProps.receipt){
-                $("#popoverPriceSection").addClass("hide");
-            }else{
-                $("#popoverPriceSection").removeClass("hide");
             }
             popoverElement = $(info.el);
             popoverEvent = true;
@@ -109,8 +101,6 @@ $(window).ready(function() {
                                 phone: x.patient.phone,
                                 safe: x.patient.safe,
                                 online: x.online,
-                                receipt: x.receipt,
-                                price: x.price,
                                 zoom: x.zoom_url,
                                 app_obj: x
                             }
@@ -188,21 +178,7 @@ $(window).ready(function() {
 		}
 	});
 
-    $("#newAppointmentReceipt").click(function(){
-        appointment.receipt = $(this).is(":checked");
-        $("#payment-info-container").toggle($(this).is(":checked"));
-    });
-
     $("#newAppointmentModal .save-button").on("click", function(e){
-
-        if(appointment.receipt){
-            appointment.price = $("newAppointmentPrice").val();
-            if(appointment.price == null){
-
-            }
-        }else{
-            delete appointment.price;
-        }
 
         appointment.online = $("#newAppointmentOnline").is(":checked");
         appointment.start = $("#newAppointmentStart").val();
@@ -218,7 +194,6 @@ $(window).ready(function() {
                     phone: appointment.patient.phone,
                     safe: appointment.patient.safe,
                     online: appointment.online,
-                    receipt: appointment.receipt,
                     price: appointment.price,
                     zoom: appointment.zoom_url,
                     app_obj: data.appointment
