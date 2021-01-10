@@ -1,37 +1,33 @@
 package com.yigitcolakoglu.Metis;
 
 import java.util.Calendar;
-
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Id;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 @Entity
-public class DisabledRule{
+public class DisabledRule{ 
 
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
-    private final long id; 
+    private long id; 
 
-    private final Calendar start; //date where the rule starts applying from.
+    @JsonFormat(locale = "tr", shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy, HH:mm", timezone = "Europe/Istanbul")
+    private Calendar start; //date where the rule starts applying from.
+
     @ManyToOne
-    private final User doctor; //date where the rule starts applying from.
-    private final long duration; // time in millis which this rule is applied for
-    private final long repetition; // interval in millis which this rule is repeated
+    @JsonIgnore
+    private User doctor; //date where the rule starts applying from.
+    private long duration; // time in millis which this rule is applied for
+    private String name; // time in millis which this rule is applied for
+    private long repetition; // interval in millis which this rule is repeated
 
-    public DisabledRule(long id, Calendar start, long duration, long repetition, User doctor){
-        this.start = start;
-        this.duration = duration;
-        this.repetition = repetition;
-        this.id = id;
-        this.doctor = doctor;
-    }
     
     @JsonIgnore
     public boolean checkDate(Calendar date){
@@ -46,7 +42,10 @@ public class DisabledRule{
 
     // getters
     public long getId(){ return this.id; }
+    public String getName(){ return this.name; }
     public Calendar getStart()  { return this.start; }
     public long getDuration()  { return this.duration; }
     public long getRepetition()  { return this.repetition; }
+
+    public void setDoctor(User doctor)  { this.doctor=doctor; }
 }

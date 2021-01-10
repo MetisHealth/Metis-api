@@ -14,7 +14,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -24,24 +23,21 @@ import org.springframework.security.core.GrantedAuthority;
 
 import org.json.JSONObject;
 
-import javax.servlet.http.HttpServletRequest;
 import com.fasterxml.jackson.databind.ObjectMapper; 
 import com.fasterxml.jackson.databind.node.ObjectNode; 
 
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.text.SimpleDateFormat;
-import java.io.IOException;
 import java.text.ParseException;
 
 import org.slf4j.Logger;
@@ -59,6 +55,9 @@ public class ApiController {
 
         @Autowired
         private UserRepository userRepository;
+
+        @Autowired
+        private DisabledRuleRepository disabledRuleRepository;
         
         @GetMapping("/api/appointments") // Return a list of appointments 
         public List<Appointment> getAppointments(@RequestParam(value = "start", defaultValue = "today") String startStr, @RequestParam(value = "end", defaultValue = "today") String endStr, Authentication auth) { 
@@ -82,13 +81,101 @@ public class ApiController {
             User doctor = userRepository.findByEmail(auth.getName());
             List<Appointment> appointments = appointmentRepository.findAllBetweenDoctor(start, end, doctor); 
 
+            if(start.after(end) || start.equals(end)) return appointments;
+
             if( appointments.size() > MAX_APPOINTMENT_RESPONSE_SIZE ){ // Do not return a response in case the range is too big. Prevents DOS.
                 appointments.clear();
             }
 
             return appointments;
         }
-        
+       
+        @GetMapping("/api/disabled") // Return a list of appointments 
+        public HashMap<String, List<Calendar[]>> getDisabledRules(@RequestParam(value = "start", defaultValue = "today") String startStr, @RequestParam(value = "end", defaultValue = "today") String endStr, Authentication auth) { 
+            Calendar today = new GregorianCalendar();
+            Calendar start = new GregorianCalendar(today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DATE), 0, 0, 0); // Set default times in case the user didn't send any input 
+            Calendar end = new GregorianCalendar(today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DATE), 23, 59, 59); 
+
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+
+            try{
+                if( !startStr.equals("today") ){
+                    start.setTime(format.parse(startStr));
+                }
+                if( !endStr.equals("today") ){
+                    end.setTime(format.parse(endStr));
+                }
+            }catch( ParseException ex ){
+                Sentry.captureException(ex);
+            }
+
+            HashMap<String, List<Calendar[]>> intervals= new HashMap<String, List<Calendar[]>>();
+
+            if(start.after(end) || start.equals(end)) return intervals;
+            int count = 0;
+            User doctor = userRepository.findByEmail(auth.getName());
+            for(DisabledRule r : doctor.getDisabled()){
+                if(r.getStart().after(end)) continue;
+
+                long offset = 0;
+                if(start.before(r.getStart())){
+                    offset = r.getStart().getTimeInMillis();
+                }else{
+                    offset = start.compareTo(r.getStart()) % (r.getDuration() + r.getRepetition());
+                }
+
+                Calendar begin = Calendar.getInstance();
+                Calendar stop = Calendar.getInstance();
+                
+                if(offset < r.getDuration()){
+                    begin = (Calendar) start.clone();
+                }else{
+                    if((r.getDuration() + r.getRepetition()) - offset < end.compareTo(start)){
+                        begin.setTimeInMillis(start.getTimeInMillis() + (r.getDuration() + r.getRepetition()) - offset);
+                    }else if(r.getStart().after(start)){
+                        begin = (Calendar) r.getStart().clone();
+                    }else{
+                        continue;
+                    }
+                }
+                List<Calendar[]> pairs = new LinkedList<Calendar[]>();
+
+                do{
+                    if(count > 255){
+                        intervals.clear();
+                        return intervals;
+                    }
+                    Calendar[] calArr = new GregorianCalendar[2];
+                    calArr[0] = (Calendar) begin.clone();
+                    stop.setTimeInMillis(begin.getTimeInMillis() + (r.getDuration()));
+                    calArr[1] = end.compareTo(stop) < 0 ? (Calendar) end.clone() : (Calendar) stop.clone();   
+                    begin.setTimeInMillis(stop.getTimeInMillis() + r.getRepetition());
+                    pairs.add(calArr);
+                    count++;
+                }while(begin.before(end));            
+                intervals.put(r.getName(), pairs);
+            }
+            return intervals;
+        }
+
+        @PostMapping(path="/api/disabled")
+        public JSONResponse postDisabledRule(@RequestBody String body, Authentication auth){
+            // TODO Implement CSRF Protection
+            DisabledRule rule;
+            try{ // Parse the POST request body into an Appointment object.
+                rule = new ObjectMapper().readValue(body, DisabledRule.class);
+            }catch(Exception ex){
+                Sentry.captureException(ex);
+                Sentry.captureMessage(body);
+                return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
+            }
+            log.info(body);
+
+            rule.setDoctor(userRepository.findByEmail(auth.getName()));
+            disabledRuleRepository.save(rule);
+            return new JSONResponse(200, "Succesfully added rule.");
+        }
+
         private boolean checkOverlap(User doc, Calendar start, Calendar end){
             Calendar day_start = (Calendar) start.clone();
             Calendar day_end = (Calendar) end.clone();

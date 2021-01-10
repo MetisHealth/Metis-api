@@ -66,7 +66,7 @@ public class User {
     @JsonIgnore @OneToMany(mappedBy="doctor")
     private List<User> patients;
     
-    @JsonIgnore @OneToMany(mappedBy="doctor")
+    @OneToMany(mappedBy="doctor")
     private List<DisabledRule> disabledRules;
 
     @JsonIgnore @ManyToOne

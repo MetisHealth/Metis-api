@@ -53,7 +53,7 @@ public class Appointment{
 
     @JsonIgnore
     public boolean dateInAppointment(Calendar time){
-        return (time.after(this.start) && time.before(this.end)) || (time.equals(this.start) || time.equals(this.end));
+        return (time.after(this.start) && time.before(this.end)) || (time.equals(this.start) && time.equals(this.end));
     }
     // getters
     public Calendar getStart()   { return this.start; }
