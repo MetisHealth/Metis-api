@@ -36,10 +36,10 @@ import java.util.UUID;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Date;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.text.SimpleDateFormat;
 import java.io.IOException;
 import java.text.ParseException;
@@ -62,23 +62,18 @@ public class ApiController {
         
         @GetMapping("/api/appointments") // Return a list of appointments 
         public List<Appointment> getAppointments(@RequestParam(value = "start", defaultValue = "today") String startStr, @RequestParam(value = "end", defaultValue = "today") String endStr, Authentication auth) { 
-            Date start = new Date(); // Set default times in case the user didn't send any input 
-            start.setHours(0); // TODO this is deprecated, change
-            start.setMinutes(0);
-            start.setSeconds(0);
-
-            Date end = new Date(); 
-            end.setHours(23);
-            end.setMinutes(59);
-            end.setSeconds(59);
+            Calendar today = new GregorianCalendar();
+            Calendar start = new GregorianCalendar(today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DATE), 0, 0, 0); // Set default times in case the user didn't send any input 
+            Calendar end = new GregorianCalendar(today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DATE), 23, 59, 59); 
 
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+
             try{
                 if( !startStr.equals("today") ){
-                    start = format.parse(startStr);
+                    start.setTime(format.parse(startStr));
                 }
                 if( !endStr.equals("today") ){
-                    end = format.parse(endStr);
+                    end.setTime(format.parse(endStr));
                 }
             }catch( ParseException ex ){
                 Sentry.captureException(ex);
@@ -94,6 +89,25 @@ public class ApiController {
             return appointments;
         }
         
+        private boolean checkOverlap(User doc, Calendar start, Calendar end){
+            Calendar day_start = (Calendar) start.clone();
+            Calendar day_end = (Calendar) end.clone();
+            day_end.set(Calendar.HOUR_OF_DAY, 0);
+            day_end.set(Calendar.MINUTE, 0);
+            day_end.set(Calendar.SECOND, 0);
+            day_start.set(Calendar.HOUR_OF_DAY, 0);
+            day_start.set(Calendar.MINUTE, 0);
+            day_start.set(Calendar.SECOND, 0);
+
+            List<Appointment> apps = appointmentRepository.findAllBetweenDoctor(day_start, day_end, doc);
+
+            for(Appointment a : apps){
+                if(a.dateInAppointment(start) || a.dateInAppointment(end)) return false;
+            }
+
+            return true;
+        }
+
         @PostMapping(path="/api/appointments")
         public JSONResponse postAppointment(@RequestBody String body, Authentication auth){
             // TODO Implement CSRF Protection
@@ -107,11 +121,7 @@ public class ApiController {
             }
             log.info(body);
 
-            // TODO check if doctor ids match with cookie
-            boolean overlapped = appointmentRepository.findOverlaps(appointment.getStart(), appointment.getEnd(), appointment.getDoctor()); // Check for overlaps in the submitted dates.
-            appointment.setDoctor(userRepository.findByEmail(auth.getName()));
-
-            if(overlapped){
+            if(checkOverlap(userRepository.findByEmail(auth.getName()), appointment.getStart(), appointment.getEnd())){
                 return new JSONResponse(400, "Dates you have submitted overlaps with already existing ones.");
             }
 

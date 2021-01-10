@@ -1,7 +1,6 @@
 package com.yigitcolakoglu.Metis;
 
-import java.util.List;
-import java.util.Date;
+import java.util.Calendar;
 
 
 import javax.persistence.Entity;
@@ -20,13 +19,13 @@ public class DisabledRule{
     @GeneratedValue(strategy=GenerationType.AUTO)
     private final long id; 
 
-    private final Date start; //date where the rule starts applying from.
+    private final Calendar start; //date where the rule starts applying from.
     @ManyToOne
     private final User doctor; //date where the rule starts applying from.
     private final long duration; // time in millis which this rule is applied for
     private final long repetition; // interval in millis which this rule is repeated
 
-    public DisabledRule(long id, Date start, long duration, long repetition, User doctor){
+    public DisabledRule(long id, Calendar start, long duration, long repetition, User doctor){
         this.start = start;
         this.duration = duration;
         this.repetition = repetition;
@@ -35,9 +34,9 @@ public class DisabledRule{
     }
     
     @JsonIgnore
-    public boolean checkDate(Date date){
-        long dateMillis = date.getTime(); 
-        long timeBetween = dateMillis - start.getTime();
+    public boolean checkDate(Calendar date){
+        long dateMillis = date.getTimeInMillis(); 
+        long timeBetween = dateMillis - start.getTimeInMillis();
         if(timeBetween < 0){
             return false;
         }
@@ -47,7 +46,7 @@ public class DisabledRule{
 
     // getters
     public long getId(){ return this.id; }
-    public Date getStart()  { return this.start; }
+    public Calendar getStart()  { return this.start; }
     public long getDuration()  { return this.duration; }
     public long getRepetition()  { return this.repetition; }
 }

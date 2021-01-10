@@ -1,6 +1,6 @@
 package com.yigitcolakoglu.Metis;
 
-import java.util.Date;
+import java.util.Calendar;
 
 
 import javax.persistence.Entity;
@@ -24,9 +24,9 @@ public class Appointment{
     private long id;  
 
     @JsonFormat(locale = "tr", shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy, HH:mm", timezone = "Europe/Istanbul")
-    private Date start;
+    private Calendar start;
     @JsonFormat(locale = "tr", shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy, HH:mm", timezone = "Europe/Istanbul")
-    private Date end;
+    private Calendar end;
 
     private double price;
     private boolean receipt;
@@ -51,9 +51,13 @@ public class Appointment{
         return false;
     }
 
+    @JsonIgnore
+    public boolean dateInAppointment(Calendar time){
+        return time.after(this.start) && time.before(this.end);
+    }
     // getters
-    public Date  getStart()   { return this.start; }
-    public Date  getEnd()     { return this.end; }
+    public Calendar getStart()   { return this.start; }
+    public Calendar  getEnd()     { return this.end; }
     public long getId()    { return this.id; }
     public User getPatient()    { return this.patient; }
     public User getDoctor()    { return this.doctor; }
