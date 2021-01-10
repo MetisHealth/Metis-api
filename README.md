@@ -2,6 +2,7 @@
 
 <p align="center">
   <img width="128" height="128" src="/src/main/resources/public/images/metis.png">
+  <img src="https://travis-ci.com/yigitcolakoglu/Metis.svg?branch=main">
 </p>
 
 Metis is a web application that allows medical clinic owners to easily manage their appointments and their patients. It is primarily designed for use in Turkey, with several specific features. It runs with SpringBoot, uses MySQL to store data and redis to manage sessions. 
