@@ -102,6 +102,7 @@ public class ApiController {
                 appointment = new ObjectMapper().readValue(body, Appointment.class);
             }catch(Exception ex){
                 Sentry.captureException(ex);
+                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
             log.info(body);
@@ -134,12 +135,14 @@ public class ApiController {
                 appointment = new ObjectMapper().readValue(body, Appointment.class);
             }catch(Exception ex){
                 Sentry.captureException(ex);
+                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
             try{
                 this.appointmentRepository.deleteAppointment(appointment.getId(), userRepository.findByEmail(auth.getName()));
             }catch(DataIntegrityViolationException ex){
                 Sentry.captureException(ex);
+                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Can't delete that!");
             }
             return new JSONResponse(200, "Success");
@@ -206,6 +209,7 @@ public class ApiController {
                 patient = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
                 Sentry.captureException(ex);
+                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
 
@@ -222,6 +226,7 @@ public class ApiController {
                 this.userRepository.save(patient);
             }catch(DataIntegrityViolationException ex){
                 Sentry.captureException(ex);
+                Sentry.captureMessage(body);
                 return new JSONResponse(500, "A user with that e-mail already exists!");
             }
             return new JSONResponse(200, "Success");
@@ -287,6 +292,7 @@ public class ApiController {
                 patient = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
                 Sentry.captureException(ex);
+                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
             if(checkRole(auth.getAuthorities(), "DOCTOR") && userRepository.checkDoctor(patient.getId(), userRepository.findByEmail(auth.getName())).size() != 1){
@@ -301,6 +307,7 @@ public class ApiController {
                 int edited = this.userRepository.updatePatient(patient.getName(), patient.getEmail(), patient.getPhone(), patient.getTCNo(), patient.getHESCode(), patient.getRole(), patient.getId());
             }catch(DataIntegrityViolationException ex){
                 Sentry.captureException(ex);
+                Sentry.captureMessage(body);
                 return new JSONResponse(500, "A user with that e-mail already exists!");
             }
             return new JSONResponse(200, "Success");
@@ -319,6 +326,7 @@ public class ApiController {
                 patient = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
                 Sentry.captureException(ex);
+                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
             if(!patient.getRole().equals("PATIENT") && !checkRole(auth.getAuthorities(),"ADMIN")){
@@ -329,6 +337,7 @@ public class ApiController {
                 this.userRepository.deletePatient(patient.getId(), userRepository.findByEmail(auth.getName()));
             }catch(DataIntegrityViolationException ex){
                 Sentry.captureException(ex);
+                Sentry.captureMessage(body);
                 return new JSONResponse(500, "A user with that e-mail already exists!");
             }
             return new JSONResponse(200, "Success");
@@ -347,6 +356,7 @@ public class ApiController {
                 profile = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
                 Sentry.captureException(ex);
+                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
             profile.setName(capitalizeFirstLetters(profile.getName()));
