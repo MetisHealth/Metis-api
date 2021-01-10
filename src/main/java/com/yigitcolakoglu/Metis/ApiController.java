@@ -52,7 +52,7 @@ public class ApiController {
         // TODO Session management 
 
         private final int MAX_APPOINTMENT_RESPONSE_SIZE = 1000;
-        private final Logger log = LoggerFactory.getLogger(CheckHesCodeTask.class);
+        private final Logger log = LoggerFactory.getLogger(ApiController.class);
 
         @Autowired
         private AppointmentRepository appointmentRepository;
@@ -121,11 +121,12 @@ public class ApiController {
             }
             log.info(body);
 
-            if(checkOverlap(userRepository.findByEmail(auth.getName()), appointment.getStart(), appointment.getEnd())){
+            appointment.setDoctor(userRepository.findByEmail(auth.getName()));
+            if(!checkOverlap(userRepository.findByEmail(auth.getName()), appointment.getStart(), appointment.getEnd())){
                 return new JSONResponse(400, "Dates you have submitted overlaps with already existing ones.");
             }
-
-            if(userRepository.checkDoctor(appointment.getPatient().getEmail(), appointment.getDoctor()).size() != 1){
+            
+            if(userRepository.checkDoctor(appointment.getPatient().getEmail(), appointment.getDoctor()).size()  < 1){
                 return new JSONResponse(500, "This patient either does not exist or is not your patient.");
             } 
             

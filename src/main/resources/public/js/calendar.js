@@ -54,10 +54,10 @@ $(window).ready(function() {
         },
         eventClick: function(info){
             closePopovers();
-            $("#popoverName").html(info.event.title);
-            $("#popoverPhone").html(info.event.extendedProps.phone);
-            $("#popoverCovid").html(info.event.extendedProps.safe ? "NO": "YES");
-            $("#popoverUrl").html(`<a target="_blank" rel="noopener noreferrer" href="${window.Metis.profile.wherebyUrl}">Link</a>`);
+            $("#popoverName").text(info.event.title);
+            $("#popoverPhone").text(info.event.extendedProps.phone);
+            $("#popoverCovid").text(info.event.extendedProps.safe ? "NO": "YES");
+            $("#popoverUrl").html(`<a target="_blank" rel="noopener noreferrer" href="${window.Metis.profile.wherebyUrl.replaceAll("\"","\\\"")}">Link</a>`);
             if(!info.event.extendedProps.online){
                 $("#popoverUrlSection").addClass("hide");
             }else{

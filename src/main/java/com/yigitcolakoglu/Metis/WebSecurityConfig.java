@@ -80,7 +80,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
                     .antMatchers("/admin/**").hasAuthority("ADMIN")
                     .antMatchers("/patient/**").hasAnyAuthority("DOCTOR","ADMIN","PATIENT")
 			)
-			.cors().and().csrf().disable() // TODO Re-Enable csrf protection
+			.cors().and() // TODO Re-Enable csrf protection
 			.formLogin((formLogin) -> formLogin
 					.permitAll()
                     .successHandler(this.myAuthenticationSuccessHandler())
