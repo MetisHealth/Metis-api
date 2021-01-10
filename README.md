@@ -3,7 +3,7 @@
 <p align="center">
   <img width="128" height="128" src="/src/main/resources/public/images/metis.png">
   <br/>
-  <p>
+  <p align="middle">
     <img src="https://travis-ci.com/yigitcolakoglu/Metis.svg?branch=main">
     <img src="https://heroku-badge.herokuapp.com/?app=metis-app">
   </p>
