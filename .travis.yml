@@ -1,8 +1,9 @@
 language: java
 jdk:
 - oraclejdk11
-om:
-  branch: master
+on:
+  branch: main 
+branch: main 
 deploy:
   provider: heroku
   app: metis-app
