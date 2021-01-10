@@ -2,6 +2,7 @@
 
 <p align="center">
   <img width="128" height="128" src="/src/main/resources/public/images/metis.png">
+  <br/>
   <img src="https://travis-ci.com/yigitcolakoglu/Metis.svg?branch=main">
 </p>
 
