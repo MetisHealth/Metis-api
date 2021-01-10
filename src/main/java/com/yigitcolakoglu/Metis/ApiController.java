@@ -44,11 +44,15 @@ import java.text.SimpleDateFormat;
 import java.io.IOException;
 import java.text.ParseException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 public class ApiController {
         // TODO Session management 
 
         private final int MAX_APPOINTMENT_RESPONSE_SIZE = 1000;
+        private final Logger log = LoggerFactory.getLogger(CheckHesCodeTask.class);
 
         @Autowired
         private AppointmentRepository appointmentRepository;
@@ -100,6 +104,8 @@ public class ApiController {
                 Sentry.captureException(ex);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
+            log.info(body);
+
             // TODO check if doctor ids match with cookie
             boolean overlapped = appointmentRepository.findOverlaps(appointment.getStart(), appointment.getEnd(), appointment.getDoctor()); // Check for overlaps in the submitted dates.
             appointment.setDoctor(userRepository.findByEmail(auth.getName()));

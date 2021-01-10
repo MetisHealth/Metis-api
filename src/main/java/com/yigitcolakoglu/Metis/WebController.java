@@ -38,13 +38,15 @@ public class WebController {
             return "redirect:/login";
         }
 
-        model.addAttribute("display_api", true);
         model.addAttribute("name", userRepository.findByEmail(auth.getName()).getName());
         if(auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("DOCTOR"))){
+            model.addAttribute("display_api", true);
             return "doctor";         
         }else if(auth.getAuthorities().stream().anyMatch(a-> a.getAuthority().equals("ADMIN"))){
+            model.addAttribute("display_api", true);
             return "admin";
         }else if(auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("PATIENT"))){
+            model.addAttribute("display_api", false);
             return "patient";
         }    
         return null;
