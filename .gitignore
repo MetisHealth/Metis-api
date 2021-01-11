@@ -18,5 +18,4 @@ bin/
 !**/src/test/**/bin/
 
 ### Virtual Env ###
-.venv/
-lib/
+.envrc
