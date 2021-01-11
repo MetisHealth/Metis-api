@@ -18,5 +18,5 @@ bin/
 !**/src/test/**/bin/
 
 ### Virtual Env ###
-venv/
+.venv/
 lib/
