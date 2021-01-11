@@ -19,3 +19,4 @@ bin/
 
 ### Virtual Env ###
 venv/
+lib/
