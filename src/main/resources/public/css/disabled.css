@@ -1,0 +1,29 @@
+.disabled-list{
+    width: 80%;
+    margin: 1.5% 15%;
+    padding: 1% 1%;
+    border: 1px solid #ccc;
+    border-radius: 8px;        
+}
+
+#disabled-container{
+    margin-top: 2.5%;
+}
+
+.disabled-rule-item span{
+    margin-left: 2.5%;
+    margin-right: 2.5%;
+    width: 25%;
+}
+
+.disabled-rule-item span input{
+    width: 60%;
+}
+
+.disabled-button{
+    height: 30%;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: 1%;
+}
+

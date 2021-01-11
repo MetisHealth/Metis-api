@@ -33,11 +33,14 @@ public class DisabledRule{
     public boolean checkDate(Calendar date){
         long dateMillis = date.getTimeInMillis(); 
         long timeBetween = dateMillis - start.getTimeInMillis();
+        System.out.println(timeBetween);
         if(timeBetween < 0){
             return false;
         }
         long normalizedTime = timeBetween % (duration + repetition);
-        return repetition < normalizedTime;
+        System.out.println(normalizedTime);
+        System.out.println(repetition);
+        return duration < normalizedTime;
     }
 
     // getters

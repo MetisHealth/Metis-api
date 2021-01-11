@@ -13,6 +13,7 @@
         <meta th:name="_csrf" th:content="${_csrf.token}"/>
         <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
         <script src="/public/assets/date.js"></script>
+        <script src="/public/assets/moment.min.js"></script>
         <script src="/public/assets/bootstrap/js/bootstrap.min.js"></script>
         <script src="/public/assets/fullcalendar/lib/main.min.js"></script>	
         <script src="/public/assets/fullcalendar/lib/locales-all.min.js"></script>	
@@ -24,8 +25,10 @@
         <script src="/public/js/calendar.js"></script>
         <script src="/public/js/patients.js"></script>
         <script src="/public/js/users.js"></script>
+        <script src="/public/js/disabled.js"></script>
 
         <link rel="stylesheet" href="/public/css/calendar.css"/>
+        <link rel="stylesheet" href="/public/css/disabled.css"/>
         <link rel="stylesheet" href="/public/css/profile.css"/>
         <link rel="stylesheet" type="text/css" href="/public/css/patients.css">
         <link rel="stylesheet" type="text/css" href="/public/css/main.css">
@@ -39,6 +42,7 @@
 			<a id="calendar-sidebar" class="sidebar-item list-group-item list-group-item-action bg-light" target="#calendar-container">Calendar</a>
 			<a id="patients-sidebar" class="sidebar-item list-group-item list-group-item-action bg-light" target="#patients-container">Patients</a>
 			<a id="users-sidebar" class="sidebar-item list-group-item list-group-item-action bg-light" target="#users-container">Users</a>
+			<a id="disabled-sidebar" class="sidebar-item list-group-item list-group-item-action bg-light" target="#disabled-container">Disabled Rules</a>
 			<a id="profile-sidebar" class="sidebar-item list-group-item list-group-item-action bg-light" target="#profile-container">Profile</a>
 			<a id="settings-sidebar" class="sidebar-item list-group-item list-group-item-action bg-light" target="#settings-container">Settings</a>
 			<a id="logout-sidebar" href="/login?logout"class="list-group-item list-group-item-action bg-light">Log Out</a>
@@ -48,6 +52,7 @@
 			<div  th:insert="fragments/calendar_doctor :: calendar" ></div>
 			<div  th:insert="fragments/users :: patients"></div>
 			<div  th:insert="fragments/users :: users"></div>
+			<div  th:insert="fragments/disabled :: disabled"></div>
 			<div  th:insert="fragments/settings :: settings"></div>
 			<div  th:insert="fragments/profile :: profile"></div>
 		  </div>

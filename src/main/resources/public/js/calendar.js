@@ -19,10 +19,12 @@ $(window).ready(function() {
     }
 
     var calendarEl = document.getElementById('calendar-container');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
+    window.calendar = new FullCalendar.Calendar(calendarEl, {
 		selectMirror: true,
         themeSystem: 'bootstrap',
         initialView: 'timeGridWeek',
+        eventOverlap: false,
+        selectOverlap: false,
         aspectRatio: 1.7,
         firstDay: 1,
         allDaySlot: false,
@@ -54,6 +56,9 @@ $(window).ready(function() {
         },
         eventClick: function(info){
             closePopovers();
+            if(info.event.display == 'background'){
+                return;
+            }
             $("#popoverName").text(info.event.title);
             $("#popoverPhone").text(info.event.extendedProps.phone);
             $("#popoverCovid").text(info.event.extendedProps.safe ? "NO": "YES");
@@ -90,23 +95,41 @@ $(window).ready(function() {
 				if(status == 500){
 					failureCallback("An error occured");
 				}else{
-					successCallback(
-						data.map(function(x) {
-						  return {
-							title: x.patient.name,
-							start: Date.parse(x.start),
-							end: Date.parse(x.end),
-                            backgroundColor: x.patient.safe ? "#1266F1" : "#FF9100",
-                            extendedProps: {
-                                phone: x.patient.phone,
-                                safe: x.patient.safe,
-                                online: x.online,
-                                zoom: x.zoom_url,
-                                app_obj: x
+                    let disabled_url_parameterized = window.location.protocol + "//" + window.location.host + `/api/disabled?start=${encodeURIComponent(info.startStr)}&end=${encodeURIComponent(info.endStr)}`
+                    $.get(disabled_url_parameterized, function(disabled_data, disabled_status){
+                        if(disabled_status == 500){
+					        failureCallback("An error occured");
+				        }else{
+                            appointment_arr = data.map(function(x) {
+                              return {
+                                title: x.patient.name,
+                                start: Date.parse(x.start),
+                                end: Date.parse(x.end),
+                                backgroundColor: x.patient.safe ? "#1266F1" : "#FF9100",
+                                extendedProps: {
+                                    phone: x.patient.phone,
+                                    safe: x.patient.safe,
+                                    online: x.online,
+                                    zoom: x.zoom_url,
+                                    app_obj: x
+                                }
+                              }
+                            });
+                            for(var n in disabled_data){
+                                appointment_arr = appointment_arr.concat(disabled_data[n].map(function(x){
+                                    return {
+                                        title: n,
+                                        start: x[0],
+                                        end: x[1],
+                                        display: 'background',
+                                        backgroundColor: '#757575',
+                                        foregroundColor: "#000000"
+                                    }
+                                }));
                             }
-						  }
-						})
-					  );
+					        successCallback(appointment_arr);
+                        }
+                    });
 				}
             });
         }

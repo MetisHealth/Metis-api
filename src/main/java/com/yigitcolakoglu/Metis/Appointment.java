@@ -44,7 +44,7 @@ public class Appointment{
     public boolean checkDisabled(){
         List<DisabledRule> rules = doctor.getDisabled();
         for(int i=0; i<rules.size(); i++){
-            if(rules.get(i).checkDate(start)){
+            if(rules.get(i).checkDate(start) || rules.get(i).checkDate(end)){ // Does not work when the appointment contains the rule, but should be fine for most usecases
                 return true;
             }   
         }

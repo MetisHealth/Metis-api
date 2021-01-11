@@ -90,6 +90,11 @@ public class ApiController {
             return appointments;
         }
        
+        @GetMapping("/api/disabled/rules") 
+        public List<DisabledRule> getRules(Authentication auth){
+            return userRepository.findByEmail(auth.getName()).getDisabled();
+        }
+
         @GetMapping("/api/disabled") // Return a list of appointments 
         public HashMap<String, List<Calendar[]>> getDisabledRules(@RequestParam(value = "start", defaultValue = "today") String startStr, @RequestParam(value = "end", defaultValue = "today") String endStr, Authentication auth) { 
             Calendar today = new GregorianCalendar();
@@ -113,31 +118,39 @@ public class ApiController {
 
             if(start.after(end) || start.equals(end)) return intervals;
             int count = 0;
-            User doctor = userRepository.findByEmail(auth.getName());
+            User doctor;
+
+            if(this.checkRole(auth.getAuthorities(), "PATIENT")){
+                doctor = userRepository.findByEmail(auth.getName()).getDoctor();
+            }else{
+                doctor = userRepository.findByEmail(auth.getName());
+            }
+
+            userRepository.findByEmail(auth.getName());
             for(DisabledRule r : doctor.getDisabled()){
                 if(r.getStart().after(end)) continue;
 
                 long offset = 0;
-                if(start.before(r.getStart())){
-                    offset = r.getStart().getTimeInMillis();
-                }else{
-                    offset = start.compareTo(r.getStart()) % (r.getDuration() + r.getRepetition());
+                long diff = end.getTimeInMillis() - start.getTimeInMillis();
+                if(!start.before(r.getStart())){
+                    offset = (start.getTimeInMillis() - r.getStart().getTimeInMillis()) % (r.getDuration() + r.getRepetition());
                 }
 
                 Calendar begin = Calendar.getInstance();
                 Calendar stop = Calendar.getInstance();
                 
-                if(offset < r.getDuration()){
+                if(r.getStart().after(start)){
+                        begin = (Calendar) r.getStart().clone();
+                }else if(offset < r.getDuration()){
                     begin = (Calendar) start.clone();
                 }else{
-                    if((r.getDuration() + r.getRepetition()) - offset < end.compareTo(start)){
+                    if((r.getDuration() + r.getRepetition()) - offset < diff){
                         begin.setTimeInMillis(start.getTimeInMillis() + (r.getDuration() + r.getRepetition()) - offset);
-                    }else if(r.getStart().after(start)){
-                        begin = (Calendar) r.getStart().clone();
                     }else{
                         continue;
                     }
                 }
+
                 List<Calendar[]> pairs = new LinkedList<Calendar[]>();
 
                 do{
@@ -148,7 +161,7 @@ public class ApiController {
                     Calendar[] calArr = new GregorianCalendar[2];
                     calArr[0] = (Calendar) begin.clone();
                     stop.setTimeInMillis(begin.getTimeInMillis() + (r.getDuration()));
-                    calArr[1] = end.compareTo(stop) < 0 ? (Calendar) end.clone() : (Calendar) stop.clone();   
+                    calArr[1] = end.getTimeInMillis() - stop.getTimeInMillis() < 0 ? (Calendar) end.clone() : (Calendar) stop.clone();   
                     begin.setTimeInMillis(stop.getTimeInMillis() + r.getRepetition());
                     pairs.add(calArr);
                     count++;
@@ -176,6 +189,36 @@ public class ApiController {
             return new JSONResponse(200, "Succesfully added rule.");
         }
 
+        @PostMapping(path="/api/disabled/update")
+        @Transactional(propagation = Propagation.REQUIRED)
+        public JSONResponse postDisabledRuleUpdate(@RequestBody String body, Authentication auth){
+
+            if(checkRole(auth.getAuthorities(), "PATIENT")){
+               return new JSONResponse(403, "You are not authorized to do this!"); 
+            }
+            // TODO Implement CSRF Protection
+            DisabledRule rule;
+            try{ // Parse the POST request body into an Appointment object.
+                rule = new ObjectMapper().readValue(body, DisabledRule.class);
+            }catch(Exception ex){
+                Sentry.captureException(ex);
+                Sentry.captureMessage(body);
+                return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
+            }
+            
+            if(disabledRuleRepository.checkDoctor(rule.getId(), userRepository.findByEmail(auth.getName())).size() < 1){
+                return new JSONResponse(500, "You don't have permission to access this rule!");
+            }
+
+            try{
+                int edited = this.disabledRuleRepository.updateRule(rule.getName(), rule.getStart(), rule.getRepetition(), rule.getDuration(), rule.getId());
+            }catch(DataIntegrityViolationException ex){
+                Sentry.captureException(ex);
+                Sentry.captureMessage(body);
+                return new JSONResponse(500, "Your input has invalid data!");
+            }
+            return new JSONResponse(200, "Success");
+        } 
         private boolean checkOverlap(User doc, Calendar start, Calendar end){
             Calendar day_start = (Calendar) start.clone();
             Calendar day_end = (Calendar) end.clone();
@@ -221,6 +264,19 @@ public class ApiController {
                 return new JSONResponse(500, "This time is disabled by the doctor.");
             }
             return new JSONResponse(200, appointmentRepository.save(appointment));
+        }
+
+        @GetMapping(path="/api/disabled/delete")
+        @Transactional(propagation = Propagation.REQUIRED)
+        public JSONResponse postDisabledRuleDelete(@RequestParam(value = "id", defaultValue = "-1") String idStr, Authentication auth){
+            long id = Long.parseLong(idStr);
+            if(id == -1) return new JSONResponse(500, "You must submit an id");
+            int deleted = disabledRuleRepository.deleteRule(id, userRepository.findByEmail(auth.getName()));
+
+            if(deleted != 1){
+                return new JSONResponse(500, "This rule either does not exist or does not belong to you.");
+            }
+            return new JSONResponse(200, "Success");
         }
 
         @PostMapping(path="/api/appointments/delete")

@@ -9,5 +9,7 @@
 * ~Javascript show specific page according to URL. (Basically survive a page-refresh) [window.location.hash]~
 * Self-registration
 * Localization using thymeleaf
+* Move away from moment.js
+* Update the Disabled section on WebUI to make it more user friendly. (No idea how though)
 * Send e-mails.
 * Auto-resizing most html elements and auto collapsing sidebar in small screens.

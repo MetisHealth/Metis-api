@@ -79,6 +79,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
                     .antMatchers("/doctor/**").hasAnyAuthority("DOCTOR","ADMIN")
                     .antMatchers("/admin/**").hasAuthority("ADMIN")
                     .antMatchers("/patient/**").hasAnyAuthority("DOCTOR","ADMIN","PATIENT")
+                    .antMatchers("/api/**").fullyAuthenticated()
 			)
 			.cors().and() // TODO Re-Enable csrf protection
 			.formLogin((formLogin) -> formLogin
