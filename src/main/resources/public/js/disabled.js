@@ -1,6 +1,6 @@
 const disabled_URL = window.location.protocol + "//" + window.location.host + "/api/disabled";
 var page_admin = 1;
-const list_item_admin = '\
+const disabled_item = '\
 		  <a href="#" class="disabled-rule-item list-group-item list-group-item-action flex-column align-items-start">\
 			<div class="d-flex w-100 justify-content-between">\
               <span>\
@@ -31,7 +31,7 @@ function update_rules(text){
 
     $.get(disabled_URL + "/rules", function(data, status){
         $(".disabled-list").empty();
-        let item = $(list_item_admin);
+        let item = $(disabled_item);
         item.attr("id", `disabled-rule-init`)
         item.remove(".delete-disabled");
         item.find(".text-input").on("input", function(e){
@@ -51,7 +51,7 @@ function update_rules(text){
         });
         item.appendTo($(".disabled-list"));
         data.forEach(function(rule){
-            let item = $(list_item_admin);
+            let item = $(disabled_item);
             item.attr("id", `disabled-rule-${rule.id}`)
             item.find(".disabled-name").val(rule.name);
             item.find(".disabled-start").val(rule.start);
