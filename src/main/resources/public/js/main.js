@@ -37,6 +37,9 @@ $(document).ready(function () {
             $(foo).toggle();
             active_id = foo;
             window.location.hash = active_id.substr(1);
+            if(foo == "#calendar-container"){
+                window.calendar.render();
+            }
         }
     });
 });

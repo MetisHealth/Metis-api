@@ -137,8 +137,8 @@ $(window).ready(function() {
 
     var popoverElement;
     var popoverEvent;
-
     calendar.render();
+
     Metis.calendar = calendar;
     $("#newAppointmentPatient").focus(function(){
         $("#searchResults").toggle(true);
