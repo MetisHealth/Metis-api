@@ -178,8 +178,6 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 rule = new ObjectMapper().readValue(body, DisabledRule.class);
             }catch(Exception ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
             log.info(body);
@@ -201,8 +199,6 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 rule = new ObjectMapper().readValue(body, DisabledRule.class);
             }catch(Exception ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
             
@@ -213,8 +209,6 @@ public class ApiController {
             try{
                 int edited = this.disabledRuleRepository.updateRule(rule.getName(), rule.getStart(), rule.getRepetition(), rule.getDuration(), rule.getId());
             }catch(DataIntegrityViolationException ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Your input has invalid data!");
             }
             return new JSONResponse(200, "Success");
@@ -245,8 +239,6 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 appointment = new ObjectMapper().readValue(body, Appointment.class);
             }catch(Exception ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
             log.info(body);
@@ -288,15 +280,11 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 appointment = new ObjectMapper().readValue(body, Appointment.class);
             }catch(Exception ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
             try{
                 this.appointmentRepository.deleteAppointment(appointment.getId(), userRepository.findByEmail(auth.getName()));
             }catch(DataIntegrityViolationException ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Can't delete that!");
             }
             return new JSONResponse(200, "Success");
@@ -362,8 +350,6 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 patient = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
 
@@ -379,8 +365,6 @@ public class ApiController {
             try{
                 this.userRepository.save(patient);
             }catch(DataIntegrityViolationException ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "A user with that e-mail already exists!");
             }
             return new JSONResponse(200, "Success");
@@ -445,8 +429,6 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 patient = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
             if(checkRole(auth.getAuthorities(), "DOCTOR") && userRepository.checkDoctor(patient.getId(), userRepository.findByEmail(auth.getName())).size() != 1){
@@ -460,8 +442,6 @@ public class ApiController {
             try{
                 int edited = this.userRepository.updatePatient(patient.getName(), patient.getEmail(), patient.getPhone(), patient.getTCNo(), patient.getHESCode(), patient.getRole(), patient.getId());
             }catch(DataIntegrityViolationException ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "A user with that e-mail already exists!");
             }
             return new JSONResponse(200, "Success");
@@ -479,8 +459,6 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 patient = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
             if(!patient.getRole().equals("PATIENT") && !checkRole(auth.getAuthorities(),"ADMIN")){
@@ -490,8 +468,6 @@ public class ApiController {
             try{
                 this.userRepository.deletePatient(patient.getId(), userRepository.findByEmail(auth.getName()));
             }catch(DataIntegrityViolationException ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "A user with that e-mail already exists!");
             }
             return new JSONResponse(200, "Success");
@@ -509,8 +485,6 @@ public class ApiController {
             try{ // Parse the POST request body into an Appointment object.
                 profile = new ObjectMapper().readValue(body, User.class);
             }catch(Exception ex){
-                Sentry.captureException(ex);
-                Sentry.captureMessage(body);
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }
             profile.setName(capitalizeFirstLetters(profile.getName()));
