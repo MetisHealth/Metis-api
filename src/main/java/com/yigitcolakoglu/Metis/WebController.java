@@ -66,7 +66,7 @@ public class WebController implements ErrorController{
                 return "error-404";
             }
             else if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
-                return "error-500";
+                return "error-505";
             }
         }
         return "error-505";

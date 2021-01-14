@@ -30,12 +30,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.Collection;
+import java.util.Calendar;
 import java.util.List;
 
 @Entity
 @Table(name="users")
 public class User {
-
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private long id;
@@ -46,6 +46,9 @@ public class User {
     private String TC_no = "00000000000";
     private String HES_code;
     private String phone;
+    
+    @OneToMany(mappedBy="patient")
+    private List<ProtocolNumber> protocolNumbers;
 
     private boolean HES_api_works = false;
     @JsonIgnore 
@@ -105,6 +108,7 @@ public class User {
     public String getTCNo()        { return this.TC_no;    }
     public String getLocale()        { return this.locale;    }
     public String getPassword()    { return this.password;    }
+    public List<ProtocolNumber> getProtocolNumbers()    { return this.protocolNumbers;    }
     public String getEmail()       { return this.email;    }
     public String getPhone()       { return this.phone;    }
     @JsonIgnore

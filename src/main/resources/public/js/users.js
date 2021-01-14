@@ -132,10 +132,10 @@ phone=${$("#admin-phone-input").val()}&name=${$("#admin-name-input").val()}&page
                                               $("#admin-tcInputModal").val(),
                                               $("#admin-hesInputModal").val(),
                                               1,
+                                              patient.protocolNumbers,
                                               $("#admin-roleInputModal").val());
-                    new_patient.update();
+                    new_patient.update(update_users);
                     $("#admin-patientModal").modal("hide");
-                    update_users("");
                 });
             });
             item.appendTo($(".patient-list-admin"));
@@ -163,10 +163,10 @@ $(document).ready(function(){
                                       $("#admin-tcInputModal").val(),
                                       $("#admin-hesInputModal").val(),
                                       1,
+                                      [],
                                       $("#admin-roleInputModal").val());
-            patient.create();
+            patient.create(update_users);
             $("#admin-patientModal").modal("hide");
-            update_patients("");
         });
     });
 });

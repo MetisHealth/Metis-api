@@ -57,6 +57,9 @@ public class ApiController {
         private UserRepository userRepository;
 
         @Autowired
+        private ProtocolNumberRepository protocolNumberRepository;
+
+        @Autowired
         private DisabledRuleRepository disabledRuleRepository;
         
         @GetMapping("/api/appointments") // Return a list of appointments 
@@ -424,7 +427,6 @@ public class ApiController {
             if(checkRole(auth.getAuthorities(), "PATIENT")){
                return new JSONResponse(403, "You are not authorized to do this!"); 
             }
-            // TODO Implement CSRF Protection
             User patient;
             try{ // Parse the POST request body into an Appointment object.
                 patient = new ObjectMapper().readValue(body, User.class);
@@ -439,19 +441,34 @@ public class ApiController {
             }
             patient.setName(capitalizeFirstLetters(patient.getName()));
             patient.setHESCode(this.removeChar(patient.getHESCode().toUpperCase().strip(), '-'));
+
             try{
                 int edited = this.userRepository.updatePatient(patient.getName(), patient.getEmail(), patient.getPhone(), patient.getTCNo(), patient.getHESCode(), patient.getRole(), patient.getId());
             }catch(DataIntegrityViolationException ex){
                 return new JSONResponse(500, "A user with that e-mail already exists!");
             }
+
+            List<ProtocolNumber> newProtocolNumbers = new LinkedList<ProtocolNumber>(patient.getProtocolNumbers());
+            List<ProtocolNumber> oldProtocolNumbers = protocolNumberRepository.getAllProtocolNumbers(this.userRepository.findById(patient.getId()));
+            for(ProtocolNumber pnum : patient.getProtocolNumbers()){ 
+               if(oldProtocolNumbers.contains(pnum)){
+                   newProtocolNumbers.remove(pnum);
+                   oldProtocolNumbers.remove(pnum);
+               }else{
+                   if(protocolNumberRepository.getOwner(pnum.number) != null) newProtocolNumbers.remove(pnum);
+               } 
+            }
+            for(ProtocolNumber p : newProtocolNumbers)
+                p.patient = this.userRepository.findById(patient.getId());
+            protocolNumberRepository.deleteAll(oldProtocolNumbers);
+            protocolNumberRepository.saveAll(newProtocolNumbers);
+
             return new JSONResponse(200, "Success");
         } 
 
         @PostMapping(path="/api/patients/delete")
         @Transactional(propagation = Propagation.REQUIRED)
         public JSONResponse postPatientDelete(@RequestBody String body, Authentication auth){
-            // TODO Implement CSRF Protection
-            // TODO more code to delete patients who have appointments
             if(checkRole(auth.getAuthorities(), "PATIENT")){
                return new JSONResponse(403, "You are not authorized to do this!"); 
             }
@@ -492,7 +509,6 @@ public class ApiController {
             try{
                 int edited = this.userRepository.updateUser(profile.getName(), profile.getEmail(), profile.getPhone(), profile.getTCNo(),profile.getHESCode(), profile.getLocale(), userRepository.findByEmail(auth.getName()).getId());
             }catch(DataIntegrityViolationException ex){
-                System.out.println(ex.toString());
                 return new JSONResponse(500, "A user with that e-mail already exists!");
             }
             return new JSONResponse(200, "Success");

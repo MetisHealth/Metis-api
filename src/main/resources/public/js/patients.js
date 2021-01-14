@@ -1,5 +1,7 @@
 var URL = window.location.protocol + "//" + window.location.host + "/api/patients";
 var page = 1;
+var tagContainer, input;
+var tags = [];
 
 const pagination_prev = '<li class="page-item page-item-patient"><a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>'
 const pagination_next = '<li class="page-item page-item-patient"><a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>'
@@ -16,7 +18,6 @@ const list_item = '\
               <button type="button" class="patient-button delete-patient p-2 bd-highlight btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i></button>\
 			</div>\
 		  </a>'
-
 
 function update_patients(text){
 
@@ -134,6 +135,11 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
                 });
             });
             item.on("click", function(event){
+                tags = patient.protocolNumbers;
+                if(!tags){
+                    tags = [];
+                }
+                addTags();
                 $("#patientModalTitle").text("Edit Patient");
                 $("#nameInputModal").val(patient.name);
                 $("#emailInputModal").val(patient.email);
@@ -149,11 +155,11 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
                                               $("#emailInputModal").val(),
                                               $("#tcInputModal").val(),
                                               $("#hesInputModal").val(),
-                                                1,
-                                                "PATIENT");
-                    new_patient.update();
+                                              1,
+                                              tags,
+                                              "PATIENT");
+                    new_patient.update(update_patients);
                     $("#patientModal").modal("hide");
-                    update_patients("");
                 });
             });
             item.appendTo($(".patient-list"));
@@ -161,14 +167,50 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
     });
 
 }
+
+
+function createTag(pnum) {
+  let label = pnum.number.toString();
+  const div = document.createElement('div');
+  div.setAttribute('class', 'tag');
+  div.setAttribute("data-toggle", "tooltip");
+  div.setAttribute("data-placement", "top");
+  div.setAttribute("title",new Date(pnum.addedDate).toLocaleDateString());
+  const span = document.createElement('span');
+  span.innerHTML = label;
+  const closeIcon = document.createElement('i');
+  closeIcon.setAttribute('class', 'fas fa-times close-tag');
+  closeIcon.setAttribute('data-item', label);
+  div.appendChild(span);
+  div.appendChild(closeIcon);
+  return div;
+}
+
+function clearTags() {
+  document.querySelectorAll('.tag').forEach(tag => {
+    tag.parentElement.removeChild(tag);
+  });
+}
+
+function addTags() {
+  clearTags();
+  tags.slice().reverse().forEach(tag => {
+    tagContainer.prepend(createTag(tag));
+  });
+}
+
 $(document).ready(function(){
     update_patients("");
+    tagContainer = document.querySelector('.patient-tag-container');
+    input = document.querySelector('.patient-tag-container input');
+
 
     $("#name-input").on('input', update_patients);
     $("#phone-input").on('input', update_patients);
     $("#mail-input").on('input', update_patients);
     $("#page-size-input").on('input', update_patients);
     $("#newPatient").on("click", function(event){ // TODO Check for e-mail collisions
+        clearTags();
         $("#patientModalSave").unbind(); // Clear events for save button
         $("#patientModalTitle").text("New Patient");
         $("#patientModal input").val("");
@@ -180,10 +222,10 @@ $(document).ready(function(){
                                       $("#tcInputModal").val(),
                                       $("#hesInputModal").val(),
                                       1,
+                                      [],
                                       "PATIENT");
-            patient.create();
+            patient.create(update_patients);
             $("#patientModal").modal("hide");
-            update_patients("");
         });
     });
     $("#passwordModalGenerate").on("click", function(e){
@@ -192,5 +234,37 @@ $(document).ready(function(){
 		var randPassword = Array(pwdLen).fill(pwdChars).map(function(x) { return x[Math.floor(Math.random() * x.length)] }).join('');
 		$("#passwordModalPassword").val(randPassword);
     });
+    input.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+          e.target.value.split(',').forEach(tag => {
+            if(isNaN(tag)){
+                return;
+            }
+            tags.push({
+                number : parseInt(tag),
+                addedDate: new Date().toISOString()
+            });
+          });
+
+          addTags();
+          input.value = '';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains("close-tag")) {
+        const tagLabel = e.target.getAttribute('data-item');
+        let index;
+        for(let i=0; i < tags.length; i++){
+            if(parseInt(tagLabel) == tags[i].number){
+                index = i;
+                break;
+            }
+        }
+        tags = [...tags.slice(0, index), ...tags.slice(index+1)];
+        addTags();
+      }
+    })
+
 });
 

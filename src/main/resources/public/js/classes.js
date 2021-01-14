@@ -3,7 +3,7 @@ $.ajaxSetup({
 });
 
 let Patient = class {
-    constructor(id, name, phone, mail, tc, hes, safe, role){
+    constructor(id, name, phone, mail, tc, hes, safe, pnums, role){
         this.role = role
         this.id = id;
         this.name = name;
@@ -12,19 +12,16 @@ let Patient = class {
         this.tcno = tc;
         this.hescode = hes;
         this.safe = safe;
+        this.protocolNumbers = pnums;
     }
 
-    create(){
+    create(f){
         delete this.id;
-        $.post("/api/patients/create", JSON.stringify(this), function(data){
-            console.log(data);
-        }, "json");
+        $.post("/api/patients/create", JSON.stringify(this), f, "json");
     }
 
-    update(){
-        $.post("/api/patients/update", JSON.stringify(this), function(data){
-            console.log(data);
-        }, "json");
+    update(f){
+        $.post("/api/patients/update", JSON.stringify(this), f, "json");
     }
 
     delete(){
@@ -35,7 +32,7 @@ let Patient = class {
     }
 
     static from(json){
-        return Object.assign(new Patient(null, null, null, null, null, null, null), json);
+        return Object.assign(new Patient(null, null, null, null, null, null, null, null), json);
     }
 
 }
