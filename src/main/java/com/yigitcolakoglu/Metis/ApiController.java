@@ -462,13 +462,14 @@ public class ApiController {
                 return new JSONResponse(500, "Server could not parse that. This could be because you submitted invalid data.");
             }  
             if(!patient.getRole().equals("PATIENT") && !checkRole(auth.getAuthorities(),"ADMIN")){
-               return new JSONResponse(403, "You cannot list this role!"); 
+               return new JSONResponse(403, "You cannot delete this role!"); 
             }
             patient.setName(capitalizeFirstLetters(patient.getName()));
             try{
+                this.appointmentRepository.deletePatientsAppointments(patient, userRepository.findByEmail(auth.getName()));
                 this.userRepository.deletePatient(patient.getId(), userRepository.findByEmail(auth.getName()));
             }catch(DataIntegrityViolationException ex){
-                return new JSONResponse(500, "A user with that e-mail already exists!");
+                return new JSONResponse(500, "An unknown error occured."); //TODO Better error message
             }
             return new JSONResponse(200, "Success");
         } 
