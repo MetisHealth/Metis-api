@@ -5,7 +5,6 @@
   <br/>
   <p align="middle">
     <img src="https://travis-ci.com/yigitcolakoglu/Metis.svg?branch=main">
-    <img src="https://heroku-badge.herokuapp.com/?app=metis-app">
   </p>
 </p>
 
