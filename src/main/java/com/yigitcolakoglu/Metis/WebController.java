@@ -42,6 +42,7 @@ public class WebController implements ErrorController{
         }
 
         model.addAttribute("name", userRepository.findByEmail(auth.getName()).getName());
+        System.out.println(auth.getAuthorities());
         if(auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("DOCTOR"))){
             model.addAttribute("display_api", true);
             return "doctor";         
@@ -73,7 +74,7 @@ public class WebController implements ErrorController{
     }
 
     @Override
-    public String getErrorPath() {
+    public String getErrorPath() { // This method is deprecated but I don't think there is another way of achieving this right now. 
         return ERROR_PATH;
     }
 
