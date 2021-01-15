@@ -116,7 +116,7 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
             });
             item.find(".delete-patient").on("click", function(e){
                 e.stopPropagation();
-                Patient.from(patient).delete(window.calendar.render);
+                Patient.from(patient).delete(window.calendar.refetchEvents);
                 $(`#patient-${patient.id}`).remove();
             });
             item.find(".password-patient").on("click", function(e){

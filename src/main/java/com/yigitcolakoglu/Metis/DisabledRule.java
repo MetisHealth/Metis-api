@@ -18,7 +18,7 @@ public class DisabledRule{
     @GeneratedValue(strategy=GenerationType.AUTO)
     private long id; 
 
-    @JsonFormat(locale = "tr", shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy, HH:mm", timezone = "Europe/Istanbul")
+    @JsonFormat(locale = "tr", shape = JsonFormat.Shape.STRING, timezone = "Europe/Istanbul")
     private Calendar start; //date where the rule starts applying from.
 
     @ManyToOne
@@ -33,14 +33,11 @@ public class DisabledRule{
     public boolean checkDate(Calendar date){
         long dateMillis = date.getTimeInMillis(); 
         long timeBetween = dateMillis - start.getTimeInMillis();
-        System.out.println(timeBetween);
         if(timeBetween < 0){
             return false;
         }
         long normalizedTime = timeBetween % (duration + repetition);
-        System.out.println(normalizedTime);
-        System.out.println(repetition);
-        return duration < normalizedTime;
+        return normalizedTime < duration;
     }
 
     // getters

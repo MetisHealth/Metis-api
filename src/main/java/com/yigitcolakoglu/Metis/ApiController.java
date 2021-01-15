@@ -237,7 +237,6 @@ public class ApiController {
 
         @PostMapping(path="/api/appointments")
         public JSONResponse postAppointment(@RequestBody String body, Authentication auth){
-            // TODO Implement CSRF Protection
             Appointment appointment;
             try{ // Parse the POST request body into an Appointment object.
                 appointment = new ObjectMapper().readValue(body, Appointment.class);

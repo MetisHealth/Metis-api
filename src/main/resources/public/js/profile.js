@@ -49,6 +49,8 @@ $(document).ready(function(){
                 "tcno": $("#profile-tc").val(),
                 "locale": $("#profile-locale").val()
             };
+            window.Metis.profile = profile_data;
+            window.calendar.refetchEvents();
             $.post("/api/profile/update", JSON.stringify(profile_data), function(data){
                 if(data.code == 200){
                     toastr.success("Profile updated successfully.");
@@ -67,6 +69,7 @@ $(document).ready(function(){
             });
         });
         $("#profile-whereby-save").on("click",function(){
+            window.Metis.wherebyUrl = $("#profile-whereby-url").val();
             $.post("/api/whereby/url",$("#profile-whereby-url").val());
         });
     });

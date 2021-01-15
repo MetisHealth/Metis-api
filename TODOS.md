@@ -11,6 +11,7 @@
 * ~Move away from moment.js~
 * Self-registration
 * Localization using thymeleaf
-* Update the Disabled section on WebUI to make it more user friendly. (No idea how though)
+* ~Update the Disabled section on WebUI to make it more user friendly. (No idea how though)~
 * Send e-mails.
 * Auto-resizing most html elements and auto collapsing sidebar in small screens.
+* Switch frontend to Vue.js

@@ -4,16 +4,16 @@ const disabled_item = '\
 		  <a href="#" class="disabled-rule-item list-group-item list-group-item-action flex-column align-items-start">\
 			<div class="d-flex w-100 justify-content-between">\
               <span>\
-                <input style="width:80%;" class="disabled-name text-input" type="text" placeholder="Name" >\
+                <label>Name:</label> <br/> <input class="disabled-name text-input" type="text" placeholder="Name" >\
               </span>\
               <span>\
-                <label>Start:</label> <input style="width: 70%;" class="disabled-start text-input" type="text" placeholder="0000">\
+                <label>Start:</label> <br/> <input class="disabled-start text-input" type="datetime-local" format-value="dd/MM/yyyy, HH:mm" placeholder="0000">\
               </span>\
               <span>\
-                <label>Duration: </label> <input class="disabled-duration text-input" type="text" placeholder="0000">\
+                <label>Stop: </label> <br/> <input class="disabled-stop text-input" type="datetime-local" placeholder="0000">\
               </span>\
               <span>\
-                <label>Interval: </label> <input class="disabled-interval text-input" type="text" placeholder="0000">\
+                <label>Next Start: </label> <br/> <input class="disabled-next-start text-input" type="datetime-local" placeholder="0000">\
               </span>\
               <div style="width:10%; height:90%;">\
                 <button type="button" class="hidden disabled-button save-disabled p-2 bd-highlight btn btn-success"><i class="fa fa-check" aria-hidden="true"></i></button>\
@@ -42,11 +42,17 @@ function update_rules(text){
             e.stopPropagation();
             $.post(disabled_URL, JSON.stringify({
                 "name": $(`#disabled-rule-init .disabled-name`).val(),
-                "start": $(`#disabled-rule-init .disabled-start`).val(),
-                "duration": parseInt(parseInt($(`#disabled-rule-init .disabled-duration`).val()) * 1000*60*60),
-                "repetition": parseInt(parseInt($(`#disabled-rule-init .disabled-interval`).val()) * 1000*60*60),
+                "start": new Date($(`#disabled-rule-init .disabled-start`).val()).toISOString(),
+                "duration": new Date($(`#disabled-rule-init .disabled-stop`).val()).getTime() - new Date($(`#disabled-rule-init .disabled-start`).val()).getTime(),
+                "repetition": new Date($(`#disabled-rule-init .disabled-next-start`).val()).getTime() - new Date($(`#disabled-rule-init .disabled-stop`).val()).getTime(),
             }), function(data){
-                },"json");
+                if(data.code == 200){
+                    toastr.success("Rule created successfully.");
+                }else{
+                    toastr.error(data.message);
+                }
+                window.calendar.refetchEvents();
+            },"json");
             $(`#disabled-rule-init .save-disabled`).toggle(false);
         });
         item.appendTo($(".disabled-list"));
@@ -54,9 +60,9 @@ function update_rules(text){
             let item = $(disabled_item);
             item.attr("id", `disabled-rule-${rule.id}`)
             item.find(".disabled-name").val(rule.name);
-            item.find(".disabled-start").val(rule.start);
-            item.find(".disabled-duration").val((rule.duration / (1000*60*60)).toFixed(2));
-            item.find(".disabled-interval").val((rule.repetition / (1000*60*60)).toFixed(2));
+            item.find(".disabled-start").val(rule.start.substr(0,16));
+            item.find(".disabled-stop").val(moment(rule.start).add(rule.duration,"ms").format("yyyy-MM-DDTHH:mm"));
+            item.find(".disabled-next-start").val(moment(rule.start).add(rule.duration + rule.repetition,"ms").format("yyyy-MM-DDTHH:mm"));
             item.find(".text-input").on("input", function(e){
                 e.stopPropagation();
                 $(`#disabled-rule-${rule.id} .save-disabled`).toggle(true);
@@ -73,10 +79,16 @@ function update_rules(text){
                 $.post(disabled_URL + `/update`, JSON.stringify({
                     "id": rule.id,
                     "name": $(`#disabled-rule-${rule.id} .disabled-name`).val(),
-                    "start": $(`#disabled-rule-${rule.id} .disabled-start`).val(),
-                    "duration": parseInt(parseInt($(`#disabled-rule-${rule.id} .disabled-duration`).val()) * 1000*60*60),
-                    "repetition": parseInt(parseInt($(`#disabled-rule-${rule.id} .disabled-interval`).val()) * 1000*60*60),
+                    "start": new Date($(`#disabled-rule-${rule.id} .disabled-start`).val()).toISOString(),
+                    "duration": new Date($(`#disabled-rule-${rule.id} .disabled-stop`).val()).getTime() - new Date($(`#disabled-rule-${rule.id} .disabled-start`).val()).getTime(),
+                    "repetition": new Date($(`#disabled-rule-${rule.id} .disabled-next-start`).val()).getTime() - new Date($(`#disabled-rule-${rule.id} .disabled-stop`).val()).getTime(),
                 }), function(data){
+                    if(data.code == 200){
+                        toastr.success("Rule created successfully.");
+                    }else{
+                        toastr.error(data.message);
+                    }
+                    window.calendar.render();
                 },"json");
                 $(`#disabled-rule-${rule.id} .save-disabled`).toggle(false);
             });
