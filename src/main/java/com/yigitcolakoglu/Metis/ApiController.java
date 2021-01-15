@@ -258,7 +258,7 @@ public class ApiController {
             if(appointment.checkDisabled()){
                 return new JSONResponse(500, "This time is disabled by the doctor.");
             }
-            return new JSONResponse(200, appointmentRepository.save(appointment));
+            return new JSONResponse(200, "Appointment created succcesfully", appointmentRepository.save(appointment));
         }
 
         @GetMapping(path="/api/disabled/delete")
@@ -465,9 +465,14 @@ public class ApiController {
 
             return new JSONResponse(200, "Success");
         } 
+        
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
+        private void deletePatientAppointments(User patient){
+            this.appointmentRepository.deletePatientsAppointments(patient);
+        }
 
         @PostMapping(path="/api/patients/delete")
-        @Transactional(propagation = Propagation.REQUIRED)
+        @Transactional(propagation = Propagation.REQUIRES_NEW)
         public JSONResponse postPatientDelete(@RequestBody String body, Authentication auth){
             if(checkRole(auth.getAuthorities(), "PATIENT")){
                return new JSONResponse(403, "You are not authorized to do this!"); 
@@ -481,10 +486,16 @@ public class ApiController {
             if(!patient.getRole().equals("PATIENT") && !checkRole(auth.getAuthorities(),"ADMIN")){
                return new JSONResponse(403, "You cannot delete this role!"); 
             }
+            if(this.userRepository.checkDoctor(patient.getId(), this.userRepository.findByEmail(auth.getName())).size() != 1){
+                return new JSONResponse(403, "You cannot delete this role!");
+            }
+
             patient.setName(capitalizeFirstLetters(patient.getName()));
+            List<Appointment> appointments = this.appointmentRepository.findAllPatients(this.userRepository.findById(patient.getId()));
             try{
-                this.appointmentRepository.deletePatientsAppointments(patient, userRepository.findByEmail(auth.getName()));
-                this.userRepository.deletePatient(patient.getId(), userRepository.findByEmail(auth.getName()));
+                this.appointmentRepository.deleteAll(appointments);
+                this.protocolNumberRepository.deleteAll(this.protocolNumberRepository.getAllProtocolNumbers(this.userRepository.findById(patient.getId())));
+                this.userRepository.delete(this.userRepository.findById(patient.getId()));
             }catch(DataIntegrityViolationException ex){
                 return new JSONResponse(500, "An unknown error occured."); //TODO Better error message
             }

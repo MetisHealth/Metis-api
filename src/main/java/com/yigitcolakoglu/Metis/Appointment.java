@@ -51,6 +51,14 @@ public class Appointment{
         return false;
     }
 
+    @Override
+    public boolean equals(Object p){
+        if (!(p instanceof Appointment))
+            return false;
+        Appointment a = (Appointment) p;
+        return a.getId() == this.id;
+    }
+
     @JsonIgnore
     public boolean dateInAppointment(Calendar time){
         return (time.after(this.start) && time.before(this.end)) || (time.equals(this.start) && time.equals(this.end));

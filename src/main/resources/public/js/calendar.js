@@ -3,7 +3,8 @@ const list_item_calendar = '<li class="patient-item-small list-group-item"></li>
 var appointment = new Appointment(null, null, null, null, false, false);
 var last_clicked = null;
 
-$(window).ready(function() {
+function waitForElement(){
+    if(typeof window.Metis.profile!== "undefined"){
     var popTemplate = [
         '<div class="popover" style="max-width:600px;" >',
         '<div class="arrow"></div>',
@@ -18,6 +19,11 @@ $(window).ready(function() {
         $('.popover').not(this).popover('hide');
     }
 
+    while(!window.Metis.profile){
+        console.log(window.Metis.profile);
+        continue;
+    }
+
     var calendarEl = document.getElementById('calendar-container');
     window.calendar = new FullCalendar.Calendar(calendarEl, {
 		selectMirror: true,
@@ -29,7 +35,7 @@ $(window).ready(function() {
         firstDay: 1,
         allDaySlot: false,
         scrollTime: "07:00:00",
-        locale: "tr",
+        locale: window.Metis.profile.locale,
         selectable: true,
         editable: true,
         headerToolbar: {
@@ -83,7 +89,13 @@ $(window).ready(function() {
                 container:'#calendar-container-main'
             }).popover("show").on('shown.bs.popover', function () {
                 $(".cancelAppointmentPopover").on("click", function(e){
-                    $.post("/api/appointments/delete", JSON.stringify(info.event.extendedProps.app_obj), function(data){console.log(data);}, "json");
+                    $.post("/api/appointments/delete", JSON.stringify(info.event.extendedProps.app_obj), function(data){
+                        if(data.code == 200){
+                            toastr.success("Appointment deleted successfully.");
+                        }else{
+                            toastr.error(data.message);
+                        }
+                    }, "json");
                     info.event.remove();
                     closePopovers();
                 });
@@ -93,11 +105,13 @@ $(window).ready(function() {
             let url_parameterized = window.location.protocol + "//" + window.location.host + `/api/appointments?start=${encodeURIComponent(info.startStr)}&end=${encodeURIComponent(info.endStr)}`
             $.get(url_parameterized, function(data, status){
 				if(status == 500){
+                    toastr.error("An error occured");
 					failureCallback("An error occured");
 				}else{
                     let disabled_url_parameterized = window.location.protocol + "//" + window.location.host + `/api/disabled?start=${encodeURIComponent(info.startStr)}&end=${encodeURIComponent(info.endStr)}`
                     $.get(disabled_url_parameterized, function(disabled_data, disabled_status){
                         if(disabled_status == 500){
+                            toastr.error("An error occured");
 					        failureCallback("An error occured");
 				        }else{
                             appointment_arr = data.map(function(x) {
@@ -222,9 +236,18 @@ $(window).ready(function() {
                     app_obj: data.appointment
                 }
             });
-            console.log(data);
+            if(data.code == 200){
+                toastr.success("Appointment created successfully.");
+            }else{
+                toastr.error(data.message);
+            }
         }, "json");
 
         $("#newAppointmentModal").modal("hide");
     });
-});
+}else{
+        setTimeout(waitForElement, 250);
+    }
+}
+
+waitForElement()

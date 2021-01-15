@@ -97,11 +97,17 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
             item.find(".safe-patient").on("click", function(e){
                 e.stopPropagation();
                 $.get("/api/hes/check?id="+patient.id, function(data, status){
+                    if(data.code != 200){
+                        toastr.error(data.message);
+                        return;
+                    }
                     if(data.message == "safe"){
+                        toastr.success(`${patient.name} is safe from COVID.`)
                         $(`#patient-${patient.id} .safe-patient`).removeClass("btn-warning");
                         $(`#patient-${patient.id} .safe-patient`).addClass("btn-success");
                         $(`#patient-${patient.id} .safe-patient`).css("color", "");
                     }else{
+                        toastr.warning(`${patient.name} is not safe from COVID.`)
                         $(`#patient-${patient.id} .safe-patient`).removeClass("btn-success");
                         $(`#patient-${patient.id} .safe-patient`).addClass("btn-warning");
                         $(`#patient-${patient.id} .safe-patient`).css("color", "black");
@@ -110,7 +116,7 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
             });
             item.find(".delete-patient").on("click", function(e){
                 e.stopPropagation();
-                Patient.from(patient).delete();
+                Patient.from(patient).delete(window.calendar.render);
                 $(`#patient-${patient.id}`).remove();
             });
             item.find(".password-patient").on("click", function(e){
@@ -123,10 +129,10 @@ phone=${$("#phone-input").val()}&name=${$("#name-input").val()}&page=${page - 1}
 						data: `newPassword=${$("#passwordModalPassword").val()}&email=${patient.email}`,
 						dataType: 'form-data',
 						success: function(data){
-							console.log(data);
+                            toastr.success("Password changed successfully!");
 						},
 						error: function(){
-							console.log("an erro");
+                            toastr.error("An error occured");
 						},
 						processData: false,
 						type: 'POST',

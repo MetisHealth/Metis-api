@@ -14,6 +14,12 @@ public class JSONResponse implements StandardResponse{
         this.code = code;
         this.appointment = app;
     }
+    
+    public JSONResponse(int code, String msg, Appointment app){
+        this.code = code;
+        this.appointment = app;
+        this.message = msg;
+    }
     //  getters 
     public int getCode(){ return this.code; }
     public String getMessage() {return this.message; }

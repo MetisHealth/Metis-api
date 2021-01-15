@@ -12,11 +12,14 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     @Query("SELECT a FROM Appointment a WHERE a.start >= :start AND a.end <= :end AND a.doctor = :doctor")
     List<Appointment> findAllBetweenDoctor(@Param("start") Calendar start, @Param("end") Calendar end, @Param("doctor") User doctor);    
 
+    @Query("SELECT a FROM Appointment a WHERE a.patient = :patient")
+    List<Appointment> findAllPatients(@Param("patient") User patient);    
+
     @Modifying
     @Query("DELETE FROM Appointment WHERE id = :id AND doctor = :doctor")
     int deleteAppointment(@Param("id") long id, @Param("doctor") User doctor);
 
     @Modifying
-    @Query("DELETE FROM Appointment WHERE patient = :patient AND doctor = :doctor")
-    int deletePatientsAppointments(@Param("patient") User patient, @Param("doctor") User doctor);
+    @Query("DELETE FROM Appointment WHERE patient = :patient")
+    void deletePatientsAppointments(@Param("patient") User patient);
 }

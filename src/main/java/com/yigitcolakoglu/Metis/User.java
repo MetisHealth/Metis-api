@@ -18,10 +18,9 @@ import javax.persistence.Id;
 import javax.persistence.Transient;
 import javax.persistence.Column;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import org.json.JSONObject;
-
 import javax.servlet.http.HttpServletRequest;
+import javax.persistence.CascadeType;
 import com.fasterxml.jackson.databind.ObjectMapper; 
 import com.fasterxml.jackson.databind.node.ObjectNode; 
 
@@ -60,16 +59,16 @@ public class User {
     private String locale = "tr";
     private boolean safe = true;
 
-    @JsonIgnore @OneToMany(mappedBy="patient")
+    @JsonIgnore @OneToMany(cascade={CascadeType.REMOVE}, mappedBy="patient")
     private List<Appointment> patientAppointments;
 
-    @JsonIgnore @OneToMany(mappedBy="doctor")
+    @JsonIgnore @OneToMany(cascade={CascadeType.REMOVE}, mappedBy="doctor")
     private List<Appointment> doctorAppointments;
 
     @JsonIgnore @OneToMany(mappedBy="doctor")
     private List<User> patients;
     
-    @OneToMany(mappedBy="doctor")
+    @OneToMany(cascade={CascadeType.REMOVE}, mappedBy="doctor")
     private List<DisabledRule> disabledRules;
 
     @JsonIgnore @ManyToOne
@@ -84,6 +83,14 @@ public class User {
     @JsonIgnore
     private boolean checkSafe(){
         return true;
+    }
+
+    @Override
+    public boolean equals(Object p){
+        if (!(p instanceof User))
+            return false;
+        User u = (User) p;
+        return u.getId() == this.id; 
     }
 
     @JsonIgnore 

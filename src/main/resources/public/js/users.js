@@ -90,7 +90,7 @@ phone=${$("#admin-phone-input").val()}&name=${$("#admin-name-input").val()}&page
             item.find(".item-email").text(patient.email);
             item.find(".delete-patient").on("click", function(e){
                 e.stopPropagation();
-                Patient.from(patient).delete();
+                Patient.from(patient).delete(window.calendar.render);
                 $(`#admin-patient-${patient.id}`).remove();
             });
             item.find(".password-patient").on("click", function(e){

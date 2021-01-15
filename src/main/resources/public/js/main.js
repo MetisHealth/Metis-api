@@ -5,13 +5,25 @@ window.Metis = {};
 var token = $("meta[name='_csrf']").attr("content");
 var header = $("meta[name='_csrf_header']").attr("content");
 
+toastr.options.closeButton = true;
+toastr.options.escapeHtml = true;
+
 $(document).ajaxSend(function(e, xhr, options) {
     xhr.setRequestHeader(header, token);
 });
 
 $.ajaxSetup({
-      contentType: "application/json; charset=utf-8"
+      contentType: "application/json; charset=utf-8",
+      error: AjaxError
 });
+
+function AjaxError(x, e) {
+  if (x.status == 0) {
+      toastr.warning("Check your network!");
+  }  else {
+      toastr.error("An unknown error occured!");
+  }
+}
 
 $(document).ready(function () {
     $(function () {
