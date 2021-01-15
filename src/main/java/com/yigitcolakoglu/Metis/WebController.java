@@ -51,7 +51,7 @@ public class WebController implements ErrorController{
         }else if(auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("PATIENT"))){
             model.addAttribute("display_api", false);
             return "patient";
-            
+        }    
         return null;
     }
 
