@@ -4,7 +4,7 @@ plugins {
 	id 'java'
 }
 
-group = 'com.yigitcolakoglu'
+group = 'net.metisapp'
 version = '1.0-SNAPSHOT'
 sourceCompatibility = '11'
 
