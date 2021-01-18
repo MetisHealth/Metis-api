@@ -50,7 +50,6 @@ $(document).ready(function(){
                 "locale": $("#profile-locale").val()
             };
             window.Metis.profile = profile_data;
-            window.calendar.refetchEvents();
             $.post("/api/profile/update", JSON.stringify(profile_data), function(data){
                 if(data.code == 200){
                     toastr.success("Profile updated successfully.");
