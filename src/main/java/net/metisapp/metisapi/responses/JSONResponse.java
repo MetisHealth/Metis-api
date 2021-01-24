@@ -1,10 +1,13 @@
 package net.metisapp.metisapi;
 
+import net.metisapp.metisapi.entities.Appointment;
+import net.metisapp.metisapi.entities.MetisUser;
+
 public class JSONResponse implements StandardResponse{
     private int code;
     private String message;
     private Appointment appointment;
-    private User user;
+    private MetisUser user;
 
     public JSONResponse(int code, String message){
         this.code = code;
@@ -22,7 +25,7 @@ public class JSONResponse implements StandardResponse{
         this.message = msg;
     }
 
-    public JSONResponse(int code, String msg, User u){
+    public JSONResponse(int code, String msg, MetisUser u){
         this.code = code;
         this.user = u;
         this.message = msg;
@@ -31,5 +34,5 @@ public class JSONResponse implements StandardResponse{
     public int getCode(){ return this.code; }
     public String getMessage() {return this.message; }
     public Appointment getAppointment() {return this.appointment; }
-    public User getUser() {return this.user; }
+    public MetisUser getUser() {return this.user; }
 }

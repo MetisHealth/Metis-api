@@ -1,8 +1,13 @@
-package net.metisapp.metisapi;
+package net.metisapp.metisapi.endpoints;
 
 import java.lang.Exception;
 import io.sentry.Sentry;
 
+import net.metisapp.metisapi.*;
+import net.metisapp.metisapi.repositories.AppointmentRepository;
+import net.metisapp.metisapi.repositories.DisabledRuleRepository;
+import net.metisapp.metisapi.repositories.ProtocolNumberRepository;
+import net.metisapp.metisapi.repositories.UserRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
@@ -63,7 +68,7 @@ public class ApiController {
         private DisabledRuleRepository disabledRuleRepository;
         
         @GetMapping("/appointments") // Return a list of appointments 
-        public List<Appointment> getAppointments(@RequestParam(value = "start", defaultValue = "today") String startStr, @RequestParam(value = "end", defaultValue = "today") String endStr, Authentication auth) { 
+        public List<Appointment> getAppointments(@RequestParam(value = "start", defaultValue = "today") String startStr, @RequestParam(value = "end", defaultValue = "today") String endStr, Authentication auth) {
             Calendar today = new GregorianCalendar();
             Calendar start = new GregorianCalendar(today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DATE), 0, 0, 0); // Set default times in case the user didn't send any input 
             Calendar end = new GregorianCalendar(today.get(Calendar.YEAR), today.get(Calendar.MONTH), today.get(Calendar.DATE), 23, 59, 59); 
