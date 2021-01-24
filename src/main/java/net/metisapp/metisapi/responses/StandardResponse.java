@@ -1,4 +1,4 @@
-package net.metisapp.metisapi;
+package net.metisapp.metisapi.responses;
 
 public interface StandardResponse{
 

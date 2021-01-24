@@ -1,4 +1,4 @@
-package net.metisapp.metisapi;
+package net.metisapp.metisapi.responses;
 
 import net.metisapp.metisapi.entities.Appointment;
 import net.metisapp.metisapi.entities.MetisUser;

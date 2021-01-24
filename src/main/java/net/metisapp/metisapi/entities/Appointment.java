@@ -1,4 +1,4 @@
-package net.metisapp.metisapi;
+package net.metisapp.metisapi.entities;
 
 import java.util.Calendar;
 
@@ -12,7 +12,6 @@ import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import  java.util.List;
 
@@ -23,9 +22,7 @@ public class Appointment{
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private long id;  
 
-    @JsonFormat(locale = "tr", shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy, HH:mm", timezone = "Europe/Istanbul")
     private Calendar start;
-    @JsonFormat(locale = "tr", shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy, HH:mm", timezone = "Europe/Istanbul")
     private Calendar end;
 
     private double price;
@@ -34,11 +31,11 @@ public class Appointment{
     private String zoom_url;
 
     @ManyToOne
-    private User patient;
+    private MetisUser patient;
 
     @JsonIgnore
     @ManyToOne
-    private User doctor;
+    private MetisUser doctor;
    
     @JsonIgnore
     public boolean checkDisabled(){
@@ -67,12 +64,12 @@ public class Appointment{
     public Calendar getStart()   { return this.start; }
     public Calendar  getEnd()     { return this.end; }
     public long getId()    { return this.id; }
-    public User getPatient()    { return this.patient; }
-    public User getDoctor()    { return this.doctor; }
+    public MetisUser getPatient()    { return this.patient; }
+    public MetisUser getDoctor()    { return this.doctor; }
     public boolean getReceipt()    { return this.receipt; }
     public boolean getOnline()    { return this.online; }
     public double getPrice()    { return this.price; }
 
     // setters
-    public void setDoctor(User doctor)    { this.doctor = doctor; }
+    public void setDoctor(MetisUser doctor)    { this.doctor = doctor; }
 }

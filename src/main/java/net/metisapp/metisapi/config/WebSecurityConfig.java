@@ -1,10 +1,14 @@
-package net.metisapp.metisapi;
+package net.metisapp.metisapi.config;
 
+import net.metisapp.metisapi.MetisApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,84 +27,52 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.beans.factory.annotation.Value;
 import java.util.Arrays;
 
+import static net.metisapp.metisapi.config.SecurityConstants.SIGN_UP_URL;
+
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter{
-    @Value("${secret.appkey}")
-    public String APP_KEY;
+    private final PasswordEncoder passwordEncoder;
+    private final MetisUserDetailsService userDetailsService;
 
-    @Autowired
-    private DataSource dataSource;
+	@Value("${jwt.secret}")
+	private String SECRET;
 
-    @Bean
-    public AuthenticationSuccessHandler myAuthenticationSuccessHandler(){
-        return new SimpleAuthenticationSuccessHandler();       
-    }
-    @Bean 
-    public UserDetailsService userDetailsService(){
-        return new ClinicUserDetailsService();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-    
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService());
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
-    }
-
-    @Bean
-    public RememberMeAuthenticationProvider rememberMeAuthenticationProvider(){
-        RememberMeAuthenticationProvider provider = new RememberMeAuthenticationProvider(APP_KEY);
-        return provider;
+    public WebSecurityConfig(MetisUserDetailsService userDetailsService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+        this.passwordEncoder = bCryptPasswordEncoder;
+        this.userDetailsService = userDetailsService;
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("*"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+	    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	    source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+	    return source;
     }
-
-    @Bean
-    public PersistentTokenRepository persistentTokenRepository() {
-        JdbcTokenRepositoryImpl db = new JdbcTokenRepositoryImpl();
-        //db.setCreateTableOnStartup(true);
-        db.setDataSource(dataSource);
-        return db;
-    } 
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http
+		http.cors().and()
+			.csrf().disable()
 			.authorizeRequests((authorize) -> authorize
-                    .antMatchers("/profile").permitAll()
+					.antMatchers(HttpMethod.POST, SIGN_UP_URL).permitAll()
+					.antMatchers("/login", SIGN_UP_URL).permitAll()
                     .anyRequest().authenticated()
 			)
-            .rememberMe((rememberMe) -> rememberMe 
-                    .key(APP_KEY)
-                    .userDetailsService(this.userDetailsService())
-                    .tokenRepository(this.persistentTokenRepository())
-            )
-            .cors().configurationSource(this.corsConfigurationSource());
+			.addFilter(new JWTAuthenticationFilter(authenticationManager(), SECRET))
+			.addFilter(new JWTAuthorizationFilter(authenticationManager(), SECRET))
+			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
 	}
     
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(this.userDetailsService());
-        auth.authenticationProvider(authenticationProvider());
-        auth.authenticationProvider(this.rememberMeAuthenticationProvider());
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
     }
 
+	@Bean
+	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+		return new PropertySourcesPlaceholderConfigurer();
+	}
 
 } 

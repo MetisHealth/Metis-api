@@ -1,11 +1,13 @@
 package net.metisapp.metisapi.entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpEntity;
-import org.springframework.security.core.userdetails.User;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -23,11 +25,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 
+import java.util.Collection;
 import java.util.List;
 
 @Entity
 @Table(name="users")
-public class User {
+public class MetisUser{
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private long id;
@@ -59,15 +62,14 @@ public class User {
     private List<Appointment> doctorAppointments;
 
     @JsonIgnore @OneToMany(mappedBy="doctor")
-    private List<User> patients;
+    private List<MetisUser> patients;
     
     @OneToMany(cascade={CascadeType.REMOVE}, mappedBy="doctor")
     private List<DisabledRule> disabledRules;
 
     @JsonIgnore @ManyToOne
-    private User doctor; 
+    private MetisUser doctor;
 
-    @JsonIgnore
     protected String password;
 
     @Column(unique = true, nullable=false)
@@ -80,9 +82,9 @@ public class User {
 
     @Override
     public boolean equals(Object p){
-        if (!(p instanceof User))
+        if (!(p instanceof MetisUser))
             return false;
-        User u = (User) p;
+        MetisUser u = (MetisUser) p;
         return u.getId() == this.id; 
     }
 
@@ -107,6 +109,7 @@ public class User {
     public String getName()        { return this.name;     }
     public String getTCNo()        { return this.TC_no;    }
     public String getLocale()        { return this.locale;    }
+    @JsonIgnore
     public String getPassword()    { return this.password;    }
     public List<ProtocolNumber> getProtocolNumbers()    { return this.protocolNumbers;    }
     public String getEmail()       { return this.email;    }
@@ -118,7 +121,7 @@ public class User {
     public String getHESCode()             { return this.HES_code; }
     public String getWherebyUrl()             { return this.WhereBy_URL; }
     @JsonIgnore
-    public User getDoctor() { return this.doctor; }
+    public MetisUser getDoctor() { return this.doctor; }
     public long getId()                    { return this.id;       }
     public boolean getSafe()            { return this.safe;       }
     public String getRole()                { return this.role;       }
@@ -126,8 +129,9 @@ public class User {
     // setters
     public void setName(String name)        { this.name = name;         }
     public void setWherebyUrl(String url) { this.WhereBy_URL = url; }
-    public void setDoctor(User doctor)      { this.doctor = doctor;         }
-    public void setPassword(User doctor)      { this.doctor = doctor;         }
+    public void setDoctor(MetisUser doctor)      { this.doctor = doctor;         }
+    @JsonProperty("password")
+    public void setPassword(String password)      { this.password = password;         }
     public void setTCNo(String TC_no)       { this.TC_no = TC_no;       }
     public void setEmail(String email)      { this.email = email;       }
     public void setPhone(String phone)      { this.phone = phone;       }

@@ -1,4 +1,4 @@
-package net.metisapp.metisapi;
+package net.metisapp.metisapi.entities;
 
 import java.util.Calendar;
 import javax.persistence.Entity;
@@ -18,12 +18,11 @@ public class DisabledRule{
     @GeneratedValue(strategy=GenerationType.AUTO)
     private long id; 
 
-    @JsonFormat(locale = "tr", shape = JsonFormat.Shape.STRING, timezone = "Europe/Istanbul")
     private Calendar start; //date where the rule starts applying from.
 
     @ManyToOne
     @JsonIgnore
-    private User doctor; //date where the rule starts applying from.
+    private MetisUser doctor; //date where the rule starts applying from.
     private long duration; // time in millis which this rule is applied for
     private String name; // time in millis which this rule is applied for
     private long repetition; // interval in millis which this rule is repeated
@@ -47,5 +46,5 @@ public class DisabledRule{
     public long getDuration()  { return this.duration; }
     public long getRepetition()  { return this.repetition; }
 
-    public void setDoctor(User doctor)  { this.doctor=doctor; }
+    public void setDoctor(MetisUser doctor)  { this.doctor=doctor; }
 }
