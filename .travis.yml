@@ -7,7 +7,7 @@ branches:
     - production
 deploy:
   provider: heroku
-  app: metis-app
+  app: metisapi
   on:
     branch: production 
   api_key:
