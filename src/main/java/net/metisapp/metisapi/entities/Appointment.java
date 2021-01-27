@@ -25,6 +25,7 @@ public class Appointment{
     private Calendar start;
     private Calendar end;
 
+    private String description = "";
     private double price;
     private boolean receipt;
     private boolean online;
@@ -63,6 +64,7 @@ public class Appointment{
     // getters
     public Calendar getStart()   { return this.start; }
     public Calendar  getEnd()     { return this.end; }
+    public String getDescription()     { return this.description; }
     public long getId()    { return this.id; }
     public MetisUser getPatient()    { return this.patient; }
     public MetisUser getDoctor()    { return this.doctor; }
