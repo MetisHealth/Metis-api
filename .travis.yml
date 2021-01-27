@@ -2,6 +2,9 @@ language: java
 jdk:
 - oraclejdk11
 
+branches:
+    only:
+    - production
 deploy:
   provider: heroku
   app: metis-app

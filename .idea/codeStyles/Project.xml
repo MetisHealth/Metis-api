@@ -1,0 +1,39 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <Python>
+      <option name="SPACE_AFTER_PY_COLON" value="false" />
+      <option name="SPACE_BEFORE_BACKSLASH" value="false" />
+      <option name="BLANK_LINE_AT_FILE_END" value="false" />
+      <option name="NEW_LINE_AFTER_COLON_MULTI_CLAUSE" value="false" />
+      <option name="SPACE_AFTER_NUMBER_SIGN" value="false" />
+      <option name="SPACE_BEFORE_NUMBER_SIGN" value="false" />
+      <option name="DICT_ALIGNMENT" value="1" />
+      <option name="DICT_NEW_LINE_AFTER_LEFT_BRACE" value="true" />
+      <option name="DICT_NEW_LINE_BEFORE_RIGHT_BRACE" value="true" />
+      <option name="USE_CONTINUATION_INDENT_FOR_ARGUMENTS" value="true" />
+      <option name="OPTIMIZE_IMPORTS_SORT_NAMES_IN_FROM_IMPORTS" value="true" />
+      <option name="OPTIMIZE_IMPORTS_JOIN_FROM_IMPORTS_WITH_SAME_SOURCE" value="true" />
+      <option name="FROM_IMPORT_PARENTHESES_FORCE_IF_MULTILINE" value="true" />
+    </Python>
+    <ScalaCodeStyleSettings>
+      <option name="MULTILINE_STRING_CLOSING_QUOTES_ON_NEW_LINE" value="true" />
+    </ScalaCodeStyleSettings>
+    <codeStyleSettings language="JAVA">
+      <indentOptions>
+        <option name="USE_TAB_CHARACTER" value="true" />
+        <option name="SMART_TABS" value="true" />
+      </indentOptions>
+    </codeStyleSettings>
+    <codeStyleSettings language="Python">
+      <option name="WRAP_LONG_LINES" value="true" />
+      <indentOptions>
+        <option name="USE_TAB_CHARACTER" value="true" />
+      </indentOptions>
+    </codeStyleSettings>
+    <codeStyleSettings language="XML">
+      <indentOptions>
+        <option name="USE_TAB_CHARACTER" value="true" />
+      </indentOptions>
+    </codeStyleSettings>
+  </code_scheme>
+</component>
