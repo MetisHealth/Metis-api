@@ -13,6 +13,8 @@ repositories {
 }
 
 dependencies {
+    compile 'org.springframework.metrics:spring-metrics:latest.release'
+    compile 'com.netflix.spectator:spectator-api:latest.release'
     implementation("com.auth0:java-jwt:3.4.0")
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.json:json:20171018'

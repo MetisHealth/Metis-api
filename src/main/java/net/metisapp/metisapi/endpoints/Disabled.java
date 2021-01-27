@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.metrics.annotation.Timed;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
+@Timed
 public class Disabled {
 
 	@Autowired
