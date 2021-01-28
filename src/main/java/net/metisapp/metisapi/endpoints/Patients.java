@@ -6,7 +6,6 @@ import net.metisapp.metisapi.entities.Appointment;
 import net.metisapp.metisapi.entities.MetisUser;
 import net.metisapp.metisapi.entities.ProtocolNumber;
 import net.metisapp.metisapi.repositories.AppointmentRepository;
-import net.metisapp.metisapi.repositories.ProtocolNumberRepository;
 import net.metisapp.metisapi.repositories.UserRepository;
 import net.metisapp.metisapi.responses.JSONResponse;
 import net.metisapp.metisapi.responses.PatientsResponse;
@@ -34,9 +33,6 @@ public class Patients {
 
 	@Autowired
 	private UserRepository userRepository;
-
-	@Autowired
-	private ProtocolNumberRepository protocolNumberRepository;
 
 	private boolean checkRole(Collection<? extends GrantedAuthority> authorities, String role){
 		return authorities.stream().anyMatch(auth -> auth.getAuthority().equals(role));
@@ -167,27 +163,11 @@ public class Patients {
 		}
 		patient.setName(capitalizeFirstLetters(patient.getName()));
 		patient.setHESCode(this.removeChar(patient.getHESCode().toUpperCase().strip(), '-'));
-
 		try{
-			int edited = this.userRepository.updatePatient(patient.getName(), patient.getEmail(), patient.getPhone(), patient.getTCNo(), patient.getHESCode(), patient.getRole(), patient.getId());
+			int edited = this.userRepository.updatePatient(patient.getName(), patient.getEmail(), patient.getPhone(), patient.getTCNo(), patient.getHESCode(), patient.getRole(), patient.getProtocolNumbers(), patient.getId());
 		}catch(DataIntegrityViolationException ex){
 			return new JSONResponse(500, "A user with that e-mail already exists!");
 		}
-
-		List<ProtocolNumber> newProtocolNumbers = new LinkedList<ProtocolNumber>(patient.getProtocolNumbers());
-		List<ProtocolNumber> oldProtocolNumbers = protocolNumberRepository.getAllProtocolNumbers(this.userRepository.findById(patient.getId()));
-		for(ProtocolNumber pnum : patient.getProtocolNumbers()){
-			if(oldProtocolNumbers.contains(pnum)){
-				newProtocolNumbers.remove(pnum);
-				oldProtocolNumbers.remove(pnum);
-			}else{
-				if(protocolNumberRepository.getOwner(pnum.number) != null) newProtocolNumbers.remove(pnum);
-			}
-		}
-		for(ProtocolNumber p : newProtocolNumbers)
-			p.patient = this.userRepository.findById(patient.getId());
-		protocolNumberRepository.deleteAll(oldProtocolNumbers);
-		protocolNumberRepository.saveAll(newProtocolNumbers);
 
 		return new JSONResponse(200, "Success");
 	}
@@ -215,7 +195,6 @@ public class Patients {
 		List<Appointment> appointments = this.appointmentRepository.findAllPatients(this.userRepository.findById(patient.getId()));
 		try{
 			this.appointmentRepository.deleteAll(appointments);
-			this.protocolNumberRepository.deleteAll(this.protocolNumberRepository.getAllProtocolNumbers(this.userRepository.findById(patient.getId())));
 			this.userRepository.delete(this.userRepository.findById(patient.getId()));
 		}catch(DataIntegrityViolationException ex){
 			return new JSONResponse(500, "An unknown error occured."); //TODO Better error message

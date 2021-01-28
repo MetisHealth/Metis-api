@@ -75,7 +75,10 @@ public class Profile {
 	public JSONResponse getProfile(Authentication auth){
 		if( auth == null)
 			return new JSONResponse(503, "You are not logged in!");
-		return new JSONResponse(200, "Logged in.", userRepository.findByEmail(auth.getName()));
+		System.out.println("Receiving profile information");
+		MetisUser user = userRepository.findByEmail(auth.getName());
+		System.out.println("Done receiving profile information");
+		return new JSONResponse(200, "Logged in.", user);
 	}
 
 	@PostMapping(path="/profile/update")

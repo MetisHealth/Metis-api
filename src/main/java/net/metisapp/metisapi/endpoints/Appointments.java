@@ -114,8 +114,6 @@ public class Appointments {
 	@PostMapping(path="/appointments/delete")
 	@Transactional(propagation = Propagation.REQUIRED)
 	public JSONResponse postAppointmentDelete(@RequestBody String body, Authentication auth){
-		// TODO Implement CSRF Protection
-		// TODO more code to delete patients who have appointments
 		Appointment appointment;
 		try{ // Parse the POST request body into an Appointment object.
 			appointment = new ObjectMapper().readValue(body, Appointment.class);

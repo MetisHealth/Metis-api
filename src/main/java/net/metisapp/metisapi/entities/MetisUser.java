@@ -1,6 +1,7 @@
 package net.metisapp.metisapi.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.lang.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.client.RestTemplate;
@@ -9,23 +10,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpEntity;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Id;
-import javax.persistence.Column;
+import javax.persistence.*;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.json.JSONObject;
 
-import javax.persistence.CascadeType;
-import com.fasterxml.jackson.databind.ObjectMapper; 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 @Entity
@@ -41,9 +37,11 @@ public class MetisUser{
     private String TC_no = "00000000000";
     private String HES_code;
     private String phone;
-    
-    @OneToMany(mappedBy="patient")
-    private List<ProtocolNumber> protocolNumbers;
+
+    @NonNull
+    @Column(columnDefinition = "TEXT")
+    @Convert(converter = ProtocolNumberJSONConverter.class)
+    private HashMap<String, Calendar> protocolNumbers;
 
     private boolean HES_api_works = false;
     @JsonIgnore 
@@ -67,7 +65,7 @@ public class MetisUser{
     @OneToMany(cascade={CascadeType.REMOVE}, mappedBy="doctor")
     private List<DisabledRule> disabledRules;
 
-    @JsonIgnore @ManyToOne
+    @JsonIgnore @ManyToOne(fetch = FetchType.LAZY)
     private MetisUser doctor;
 
     protected String password;
@@ -111,7 +109,7 @@ public class MetisUser{
     public String getLocale()        { return this.locale;    }
     @JsonIgnore
     public String getPassword()    { return this.password;    }
-    public List<ProtocolNumber> getProtocolNumbers()    { return this.protocolNumbers;    }
+    public HashMap<String, Calendar> getProtocolNumbers()    { return this.protocolNumbers;    }
     public String getEmail()       { return this.email;    }
     public String getPhone()       { return this.phone;    }
     @JsonIgnore
