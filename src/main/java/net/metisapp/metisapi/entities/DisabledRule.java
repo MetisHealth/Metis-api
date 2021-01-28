@@ -1,14 +1,12 @@
 package net.metisapp.metisapi.entities;
 
 import java.util.Calendar;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.ManyToOne;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 
 
 @Entity
@@ -20,7 +18,7 @@ public class DisabledRule{
 
     private Calendar start; //date where the rule starts applying from.
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
     private MetisUser doctor; //date where the rule starts applying from.
     private long duration; // time in millis which this rule is applied for

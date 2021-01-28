@@ -1,6 +1,7 @@
 package net.metisapp.metisapi.repositories;
 
 import net.metisapp.metisapi.entities.MetisUser;
+import net.metisapp.metisapi.entities.ProtocolNumber;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -8,6 +9,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.HashMap;
+import java.util.Calendar;
 
 public interface UserRepository extends JpaRepository<MetisUser, Integer>{
         @Query("SELECT p FROM MetisUser p WHERE p.email = :email AND p.doctor = :doctor")
@@ -38,8 +41,8 @@ public interface UserRepository extends JpaRepository<MetisUser, Integer>{
         MetisUser findById(@Param("id") long id);
 
         @Modifying
-        @Query("UPDATE MetisUser u SET u.name = :name, u.email = :email, u.phone = :phone, u.TC_no = :tcno, u.HES_code = :hescode, u.role = :role WHERE u.id = :id")
-        int updatePatient(@Param("name") String name, @Param("email") String email, @Param("phone") String phone, @Param("tcno") String tcno, @Param("hescode") String hescode, @Param("role") String role, @Param("id") long id);
+        @Query("UPDATE MetisUser u SET u.name = :name, u.email = :email, u.phone = :phone, u.TC_no = :tcno, u.HES_code = :hescode, u.role = :role, u.protocolNumbers = :pNums WHERE u.id = :id")
+        int updatePatient(@Param("name") String name, @Param("email") String email, @Param("phone") String phone, @Param("tcno") String tcno, @Param("hescode") String hescode, @Param("role") String role, @Param("pNums") HashMap<String, Calendar> pNumbers, @Param("id") long id);
 
         @Modifying
         @Query("UPDATE MetisUser u SET u.name = :name, u.email = :email, u.phone = :phone, u.TC_no = :tcno, u.HES_code = :hescode, u.locale = :locale WHERE u.id = :id")

@@ -1,24 +1,17 @@
 package net.metisapp.metisapi.entities;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.ManyToOne;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 
 
 import java.util.Calendar;
 
-@Entity
-@Table(name="protocol_numbers")
 public class ProtocolNumber{
-    @Id
-    public long number;
+    public Long number;
 
-    @JsonIgnore
-    @ManyToOne
-    public MetisUser patient;
     public Calendar addedDate = Calendar.getInstance();
     
     @Override

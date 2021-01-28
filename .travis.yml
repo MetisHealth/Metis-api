@@ -1,14 +1,13 @@
 language: java
 jdk:
 - oraclejdk11
-
 branches:
-    only:
-    - production
+  only:
+  - production
 deploy:
   provider: heroku
-  app: metis-app
+  app: metisapi
   on:
-    branch: production 
+    branch: production
   api_key:
-    secure: qcl0sqtknlTJcqQEu0rRj70h4SaRjbq5jy6j7HOr+iQIt+tSM/S/nE9g3se8AvPuIuLgD4JFVPXvQKLdBSvf3djuA0eja35cO9FWx3YGJ5boYavj1gX00cTNZChrr5HyIKDLJ2eO6MoRiFuOjT5+lLQH0xnRF4fVf1CSC/YXy/yGt8MM7GHOIYIZn/admhvibSNd70F0XtUNTXX5a25TFvyXdUrbaKafsQUNsXVuQnJPbT2VrXK5mTQHj8XQXedQMuTCfplahpHjmBXFxMtbGuXLNNTK2DwSiiSV1N7ozA65v5/B2sYwq8VqSX8za/Wy74p3YZTpueNCdZN4DORxrKUT/JiMZv2l2rqUUQsd0QiEzMoyK5FopiuCiwSeHZe14TEpwKHYMYzjQNytUKYn5aGcBWQSAkT00cyHo3q+u637H1WckFmxUJYL9Gn4unp0RopcpMAPiGgddDdVgW3LMwrMvsbwPmJ5/eIb3arF5X1FievvygkcWDZmMezZix6t4LcxS96OmxbWRAf7BxvThMZmu2KdHT/1E40ekgLtpVKpI/rJnKsvO0jSvaKOmL4UwgPdT2u6PI9bVj7++vPK8ekeIT1tn1AuMzF/C0fwSIlVdX++LSiy9bKmpNrINqjKO5JogxKmiV6zeXTuNS/anRSJyC6ACqqp8yq0SagQ8pE=
+    secure: TLQ42Oib+mNotzMN/8NH/65sx/jBfks/uaAZvzOr1dLJz2WrF64K05fkwV6b/ph3gnEmNXLO34ErVAtV0RLuCZEVE3GEftY6MlMK3yQRJwq2e14VkByVjSPd7uP3fyq/+cwX8oGoXVtAS2r0rOpbgOcUw6+/yVtxIbGSkhbMr9dCSlHDrRVJK5JEVr2O4Utov9Xy+b8yqpA0HXGqxAI8pqzclaarvV5egEHMl7i/ruk+Hmnh/KHuUEHoJpH0xOf8Omscgiopl7kXYbGmB2DB+kHxbZ2esJL1zMFVsjz3xy6EbyF1prD8QtBrLpjt73sdNN+Wan6MRO2IEmimO+QzKFMhbHSneRDpazgG5Q6Eo1rX3yP2M5zZIOZH/wnQMHB2XQJpAKfBJ0A0Rj5xtZZiJPbn0es62PW0Iam8DSqf+ppoTjr05XIqFZyez2Rh2TuS3+gs8uiiqmfLWc9ragt5qnfv0POSuN2od1SK0DEpN3965+zt+DMXAZ/fk19UliY4G/78Za+9JocJXHQwky+tWomf6O+i5M3SsE6RFOAKwKLcfBGsqR4rVumP4+FyHe5tTvdMuv3luHdAHaPElH9XZyX9hZFmob9+YbTKHrwWzDmhy0hk05Du720EUhCKdGx3Mq9wMdSsWUcXwWdDa13annUTIXSNHLI0SQU6CUzsevc=
