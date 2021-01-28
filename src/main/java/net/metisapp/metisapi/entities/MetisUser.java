@@ -31,12 +31,12 @@ public class MetisUser{
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private long id;
     
-    private String role;
+    private String role = "PATIENT";
 
     private String name;
-    private String TC_no = "00000000000";
-    private String HES_code;
-    private String phone;
+    private String TC_no = "";
+    private String HES_code = "";
+    private String phone = "";
 
     @NonNull
     @Column(columnDefinition = "TEXT")
