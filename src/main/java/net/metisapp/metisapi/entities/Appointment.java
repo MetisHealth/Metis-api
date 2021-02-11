@@ -26,11 +26,11 @@ public class Appointment{
     private boolean online;
     private String zoom_url;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private MetisUser patient;
 
     @JsonIgnore
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private MetisUser doctor;
    
     @JsonIgnore

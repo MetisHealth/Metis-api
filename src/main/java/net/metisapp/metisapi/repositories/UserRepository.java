@@ -22,8 +22,8 @@ public interface UserRepository extends JpaRepository<MetisUser, Integer>{
         @Query("SELECT p FROM MetisUser p WHERE p.id = :id AND p.doctor = :doctor")
         List<MetisUser> checkDoctor(@Param("id") long id, @Param("doctor") MetisUser doctor);
 
-        @Query("SELECT p FROM MetisUser p WHERE p.email LIKE :email% AND p.phone LIKE :phone% AND p.name LIKE %:name% AND p.doctor = :doctor AND p.role LIKE :role")
-        List<MetisUser> searchUser(@Param("email") String email, @Param("phone") String phone, @Param("name") String name, @Param("doctor") MetisUser doctor, @Param("role") String role, Pageable pageable);
+        @Query("SELECT p FROM MetisUser p WHERE p.email LIKE :email% AND p.phone LIKE :phone% AND p.name LIKE %:name% AND p.doctor.email = :doctor AND p.role LIKE :role")
+        List<MetisUser> searchUser(@Param("email") String email, @Param("phone") String phone, @Param("name") String name, @Param("doctor") String doctor, @Param("role") String role, Pageable pageable);
 
         @Query("SELECT p FROM MetisUser p WHERE p.email LIKE :email% AND p.phone LIKE :phone% AND p.name LIKE %:name% AND p.role LIKE :role")
         List<MetisUser> searchUser(@Param("email") String email, @Param("phone") String phone, @Param("name") String name, @Param("role") String role, Pageable pageable);
@@ -32,7 +32,7 @@ public interface UserRepository extends JpaRepository<MetisUser, Integer>{
         MetisUser findByEmail(@Param("email") String email);
 
         @Query("SELECT count(*) FROM MetisUser p WHERE p.email LIKE :email% AND p.phone LIKE :phone% AND p.name LIKE %:name% AND p.doctor = :doctor AND p.role LIKE :role")
-        long countPatients(@Param("email") String email, @Param("phone") String phone, @Param("name") String name, @Param("doctor") MetisUser doctor, @Param("role") String role);
+        long countPatients(@Param("email") String email, @Param("phone") String phone, @Param("name") String name, @Param("doctor") String doctor, @Param("role") String role);
 
         @Query("SELECT count(*) FROM MetisUser p WHERE p.email LIKE :email% AND p.phone LIKE :phone% AND p.name LIKE %:name% AND p.role LIKE :role")
         long countPatients(@Param("email") String email, @Param("phone") String phone, @Param("name") String name, @Param("role") String role);

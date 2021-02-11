@@ -17,7 +17,7 @@ public class ProtocolNumberJSONConverter implements AttributeConverter<Map<Strin
 	@Override
 	public String convertToDatabaseColumn(Map<String, Calendar> protocolNumbers) {
 		if(protocolNumbers == null)
-			return "[]";
+			return "{}";
 		String protocolNumberJson = null;
 		try {
 			protocolNumberJson = new ObjectMapper().writeValueAsString(protocolNumbers);
