@@ -82,15 +82,15 @@ public class Patients {
 			patients = userRepository.searchUser(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), "PATIENT", pageable);
 			patient_num = userRepository.countPatients(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), "PATIENT");
 		}else{
-			MetisUser doctor = userRepository.findByEmail(auth.getName());
-			patients = userRepository.searchUser(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), doctor, "PATIENT", pageable);
-			patient_num = userRepository.countPatients(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), doctor, "PATIENT");
+			patients = userRepository.searchUser(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), auth.getName(), "PATIENT", pageable);
+			patient_num = userRepository.countPatients(email, phone, name.isEmpty() ? "" : capitalizeFirstLetters(name), auth.getName(), "PATIENT");
 		}
 		if(patients.size() > 1000){
 			patients.clear();
 		}
 		return new PatientsResponse(patient_num, patients); // TODO Write a method in UserRepository to get the number of patients. As this definitely won't work.
 	}
+
 
 	@PostMapping(path="/patients/create")
 	public JSONResponse postPatientCreate(@RequestBody String body, Authentication auth){

@@ -74,8 +74,7 @@ public class Appointments {
 			Sentry.captureException(ex);
 		}
 
-		MetisUser doctor = userRepository.findByEmail(auth.getName());
-		List<Appointment> appointments = appointmentRepository.findAllBetweenDoctor(start, end, doctor);
+		List<Appointment> appointments = appointmentRepository.findAllBetweenDoctor(start, end, auth.getName());
 
 		if(start.after(end) || start.equals(end)) return appointments;
 

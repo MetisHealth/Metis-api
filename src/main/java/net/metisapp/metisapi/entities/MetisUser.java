@@ -43,12 +43,21 @@ public class MetisUser{
     @Convert(converter = ProtocolNumberJSONConverter.class)
     private HashMap<String, Calendar> protocolNumbers;
 
-    private boolean HES_api_works = false;
-    @JsonIgnore 
+    @JsonIgnore
+    @Column( length = 999 )
+    private String zoom_access_token;
+    @JsonIgnore
+    @Column( length = 999 )
+    private String zoom_refresh_token;
+    @JsonIgnore
     private String HES_id_token;
+    @JsonIgnore
+    private Calendar zoom_expiry = Calendar.getInstance();
+    @JsonIgnore
+    private Calendar HES_expiry = Calendar.getInstance();
 
-    private boolean WhereBy_api_works = false;
-    private String WhereBy_URL = "";
+    private boolean zoom_api_works = false;
+    private boolean HES_api_works = false;
 
     private String locale = "tr";
     private boolean safe = true;
@@ -117,7 +126,6 @@ public class MetisUser{
     @JsonIgnore 
     public String getHesToken() { return this.HES_id_token; }
     public String getHESCode()             { return this.HES_code; }
-    public String getWherebyUrl()             { return this.WhereBy_URL; }
     @JsonIgnore
     public MetisUser getDoctor() { return this.doctor; }
     public long getId()                    { return this.id;       }
@@ -126,7 +134,6 @@ public class MetisUser{
 
     // setters
     public void setName(String name)        { this.name = name;         }
-    public void setWherebyUrl(String url) { this.WhereBy_URL = url; }
     public void setDoctor(MetisUser doctor)      { this.doctor = doctor;         }
     @JsonProperty("password")
     public void setPassword(String password)      { this.password = password;         }

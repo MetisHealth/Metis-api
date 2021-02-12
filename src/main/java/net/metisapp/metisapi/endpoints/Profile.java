@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +36,13 @@ import java.util.Map;
 public class Profile {
 	@Autowired
 	private UserRepository userRepository;
+
+	@Value("${zoom.client.id}")
+	private String Zoom_Client_Id;
+	@Value("${zoom.client.secret}")
+	private String Zoom_Client_Secret;
+	@Value("${zoom.redirect.uri}")
+	private String Zoom_Redirect_Uri;
 
 	private String capitalizeFirstLetters(String phrase) {
 		String[] words = phrase.trim().toLowerCase().split(" ");
@@ -65,7 +76,7 @@ public class Profile {
 		}
 		BCryptPasswordEncoder pwdEncoder = new BCryptPasswordEncoder();
 		if(!pwdEncoder.matches(data.get("oldPassword"), userRepository.findByEmail(auth.getName()).getPassword())){
-			return new JSONResponse(500, "Old password incorrect.");
+			return new JSONResponse(403, "Old password incorrect.");
 		}
 		userRepository.updatePassword(auth.getName(), pwdEncoder.encode(data.get("newPassword")));
 		return new JSONResponse(200, "Password changed succcesfully.");
@@ -81,7 +92,7 @@ public class Profile {
 		return new JSONResponse(200, "Logged in.", user);
 	}
 
-	@PostMapping(path="/profile/update")
+	@PostMapping(path="/profile")
 	@Transactional(propagation = Propagation.REQUIRED)
 	public StandardResponse postProfileUpdate(@RequestBody String body, Authentication auth){
 		MetisUser profile;
@@ -109,7 +120,7 @@ public class Profile {
 		ObjectNode request_obj = mapper.createObjectNode();
 		request_obj.put("phone",phone);
 		HttpEntity<String> request = new HttpEntity<String>(request_obj.toString(), headers);
-		ResponseEntity<String> result = restTemplate.postForEntity("https://hessvc.saglik.gov.tr/send-code-to-login", request, String.class);
+		ResponseEntity<String> result = restTemplate.postForEntity("https://hessvc.saglik.gov.tr/api/send-code-to-login", request, String.class);
 		return new JSONResponse(200, "Sent SMS");
 	}
 
@@ -127,26 +138,42 @@ public class Profile {
 		request_obj.put("rememberMe",true);
 		HttpEntity<String> request = new HttpEntity<String>(request_obj.toString(), headers);
 		String token = "";
+		Calendar expiry = Calendar.getInstance();
+		expiry.add(Calendar.MONTH, 1);
 		try{
-			ResponseEntity<String> result = restTemplate.postForEntity("https://hessvc.saglik.gov.tr/authenticate-with-code", request, String.class);
+			ResponseEntity<String> result = restTemplate.postForEntity("https://hessvc.saglik.gov.tr/api/authenticate-with-code", request, String.class);
 			JSONObject response = new JSONObject(result.getBody());
 			token = response.getString("id_token");
 		}catch(Exception e){
 			return new JSONResponse(500, "Wrong code");
 		}
 		if(!token.isEmpty()){
-			userRepository.updateHesToken(auth.getName(), token);
+			userRepository.updateHesToken(auth.getName(), token, expiry);
 		}else{
 			return new JSONResponse(500, "An unknown error occured.");
 		}
-		return new JSONResponse(200, "Sent SMS");
+		return new JSONResponse(200, "Connection succesful!");
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
-	@PostMapping(path="/whereby/url")
-	public JSONResponse postWherebyApiKey(@RequestBody String body, Authentication auth){
-		userRepository.updateWherebyKey(auth.getName(), body);
-		return new JSONResponse(200, "Success");
+	@GetMapping(path="/profile/zoom/authorization")
+	public JSONResponse getZoomAuthorization(@RequestParam(value="code") String code, Authentication auth){
+		Calendar expiry = Calendar.getInstance();
+		expiry.add(Calendar.MONTH, 1);
+		String authorization = "Basic " + Base64.getEncoder().encodeToString((Zoom_Client_Id + ":" + Zoom_Client_Secret).getBytes(StandardCharsets.UTF_8));
+		RestTemplate restTemplate = new RestTemplate();
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.set("Authorization", authorization);
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode request_obj = mapper.createObjectNode();
+		HttpEntity<String> request = new HttpEntity<String>(request_obj.toString(), headers);
+		ResponseEntity<String> result = restTemplate.postForEntity(String.format("https://zoom.us/oauth/token?grant_type=authorization_code&code=%s&redirect_uri=%s", code, Zoom_Redirect_Uri)
+				, request
+				, String.class);
+		JSONObject response = new JSONObject(result.getBody());
+		userRepository.updateZoomTokens(auth.getName(), response.getString("access_token"), response.getString("refresh_token"), expiry);
+		return new JSONResponse(200, "OK");
 	}
 
 }
