@@ -91,6 +91,7 @@ public class Patients {
 		return new PatientsResponse(patient_num, patients); // TODO Write a method in UserRepository to get the number of patients. As this definitely won't work.
 	}
 
+
 	@PostMapping(path="/patients/create")
 	public JSONResponse postPatientCreate(@RequestBody String body, Authentication auth){
 		if(checkRole(auth.getAuthorities(), "PATIENT")){
